@@ -9,6 +9,8 @@ typedef struct{
 	uint8_t sx, sy; //width (sx), height(sy) of player hitbox
 } player;
 
-void push_buffer_player(uint8_t *buffer[][SCREEN_COLS]);
+void player_update_pos(uint8_t input, player *p1);
+void player_push_buffer(uint8_t buffer[][SCREEN_COLS], player *p1);
+
 
 #endif /* PLAYER_H_ */
