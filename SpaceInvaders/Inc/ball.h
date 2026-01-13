@@ -1,10 +1,3 @@
-/*
- * ball.h
- *
- *  Created on: Jan 7, 2026
- *      Author: Whyask
- */
-
 #ifndef BALL_H_
 #define BALL_H_
 

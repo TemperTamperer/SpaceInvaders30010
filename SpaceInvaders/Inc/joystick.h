@@ -1,10 +1,3 @@
-/*
- * joystick.h
- *
- *  Created on: Jan 7, 2026
- *      Author: Whyask
- */
-
 #ifndef JOYSTICK_H_
 #define JOYSTICK_H_
 

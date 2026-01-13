@@ -1,8 +1,11 @@
-/*
- * player.c
- *
- *  Created on: Jan 13, 2026
- *      Author: Whyask
- */
+#include "player.h"
+
+void push_buffer_player(uint8_t *buffer[][SCREEN_COLS]){
+/* Player sprite:
+	 ^
+ 	/ \
+   /═█═\
+*/
 
 
+}
