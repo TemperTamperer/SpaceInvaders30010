@@ -4,13 +4,21 @@
 #include "player.h"
 #include "draw.h"
 #include "ansi.h"
+#include "timer.h"
+#include "joystick.h"
+
 
 int main(void)
 {
 	uart_init(115200);
+	timer15_init();
+	GPIO_init();
+	printf("\x1B[?25h");
+
 
 	clrscr(); //Ensures putty terminal is clear before anything
 	draw_border();
+	printf("\x1B[?25l");
 	uint8_t current_buffer[SCREEN_ROWS][SCREEN_COLS]; //Buffer is used to store visuals.
 	uint8_t shadow_buffer[SCREEN_ROWS][SCREEN_COLS]; //Buffer used to sore visuals of last frame
 	memset(current_buffer, ' ', SCREEN_ROWS * SCREEN_COLS); //Set all elements to " " to clear buffer
@@ -19,13 +27,20 @@ int main(void)
 
 
 
-	player p1 = {.x = 50, .y =59, .sx =5, .sy = 3}; //defines the player at (50, 59) which is the bottom middle of the screen, with a size of 5x3
-	uint8_t tempvar = 1;
+	player p1 = {.x = 50, .y =SCREEN_ROWS-1, .sx =5, .sy = 3}; //defines the player at (50, 59) which is the bottom middle of the screen, with a size of 5x3
+	uint8_t input = 0;
 	while (1){
-	clear_buffer(current_buffer);
-	player_update_pos(tempvar, &p1);
-	player_push_buffer(current_buffer, &p1);
-	draw_buffer(current_buffer, shadow_buffer);
+		 if (timer_flag)
+		    {
+		        timer_flag = 0;
+
+		        input = read_joystick();
+
+		        clear_buffer(current_buffer);
+		        player_update_pos(input, &p1);
+		        player_push_buffer(current_buffer, &p1);
+		        draw_buffer(current_buffer, shadow_buffer);
+		    }
 }
-	while(1){}
+
 }

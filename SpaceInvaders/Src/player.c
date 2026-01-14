@@ -1,8 +1,23 @@
 #include "player.h"
-void player_update_pos(uint8_t input, player *p1){
-	if(p1->x < 1) return;
-	p1->x -= 1;
+#include "joystick.h"
+void player_update_pos(uint8_t input, player *p1)
+{
+    // Move left
+    if (input & JOY_LEFT)
+    {
+        if (p1->x > 1)
+            p1->x--;
+    }
+
+    // Move right
+    if (input & JOY_RIGHT)
+    {
+        if (p1->x < SCREEN_COLS - p1->sx - 1)
+            p1->x++;
+    }
 }
+
+
 
 void player_push_buffer(uint8_t buffer[][SCREEN_COLS], player *p1){
 /* Player sprite:
