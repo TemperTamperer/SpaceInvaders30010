@@ -10,19 +10,22 @@ int main(void)
 	uart_init(115200);
 
 	clrscr(); //Ensures putty terminal is clear before anything
-	uint8_t foreground_buffer[SCREEN_ROWS][SCREEN_COLS]; //Buffer is used to store visuals.
-	for (int r = 0; r < SCREEN_ROWS; r++) {
-	    for (int c = 0; c < SCREEN_COLS; c++) {
-	        foreground_buffer[r][c] = ' '; // Use a visible character
-	    }
-	    foreground_buffer[r][SCREEN_COLS - 1] = '\0';
-	}
+	draw_border();
+	uint8_t current_buffer[SCREEN_ROWS][SCREEN_COLS]; //Buffer is used to store visuals.
+	uint8_t shadow_buffer[SCREEN_ROWS][SCREEN_COLS]; //Buffer used to sore visuals of last frame
+	memset(current_buffer, ' ', SCREEN_ROWS * SCREEN_COLS); //Set all elements to " " to clear buffer
+	memset(shadow_buffer, ' ', SCREEN_ROWS * SCREEN_COLS);
+
+
+
+
 	player p1 = {.x = 50, .y =59, .sx =5, .sy = 3}; //defines the player at (50, 59) which is the bottom middle of the screen, with a size of 5x3
 	uint8_t tempvar = 1;
 	while (1){
+	clear_buffer(current_buffer);
 	player_update_pos(tempvar, &p1);
-	player_push_buffer(foreground_buffer, &p1);
-	draw_buffer(foreground_buffer);
+	player_push_buffer(current_buffer, &p1);
+	draw_buffer(current_buffer, shadow_buffer);
 }
 	while(1){}
 }
