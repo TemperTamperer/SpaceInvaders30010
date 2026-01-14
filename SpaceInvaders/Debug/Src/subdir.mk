@@ -6,8 +6,6 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../Src/30010_io.c \
-../Src/HAL_TIMER.c \
-../Src/PWM.c \
 ../Src/ansi.c \
 ../Src/ball.c \
 ../Src/charset.c \
@@ -21,8 +19,6 @@ C_SRCS += \
 
 OBJS += \
 ./Src/30010_io.o \
-./Src/HAL_TIMER.o \
-./Src/PWM.o \
 ./Src/ansi.o \
 ./Src/ball.o \
 ./Src/charset.o \
@@ -36,8 +32,6 @@ OBJS += \
 
 C_DEPS += \
 ./Src/30010_io.d \
-./Src/HAL_TIMER.d \
-./Src/PWM.d \
 ./Src/ansi.d \
 ./Src/ball.d \
 ./Src/charset.d \
@@ -57,7 +51,7 @@ Src/%.o: ../Src/%.c Src/subdir.mk
 clean: clean-Src
 
 clean-Src:
-	-$(RM) ./Src/30010_io.d ./Src/30010_io.o ./Src/HAL_TIMER.d ./Src/HAL_TIMER.o ./Src/PWM.d ./Src/PWM.o ./Src/ansi.d ./Src/ansi.o ./Src/ball.d ./Src/ball.o ./Src/charset.d ./Src/charset.o ./Src/joystick.d ./Src/joystick.o ./Src/lcd.d ./Src/lcd.o ./Src/main.d ./Src/main.o ./Src/syscalls.d ./Src/syscalls.o ./Src/sysmem.d ./Src/sysmem.o ./Src/system_stm32f30x.d ./Src/system_stm32f30x.o ./Src/timer.d ./Src/timer.o
+	-$(RM) ./Src/30010_io.d ./Src/30010_io.o ./Src/ansi.d ./Src/ansi.o ./Src/ball.d ./Src/ball.o ./Src/charset.d ./Src/charset.o ./Src/joystick.d ./Src/joystick.o ./Src/lcd.d ./Src/lcd.o ./Src/main.d ./Src/main.o ./Src/syscalls.d ./Src/syscalls.o ./Src/sysmem.d ./Src/sysmem.o ./Src/system_stm32f30x.d ./Src/system_stm32f30x.o ./Src/timer.d ./Src/timer.o
 
 .PHONY: clean-Src
 

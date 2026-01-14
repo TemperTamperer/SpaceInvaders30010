@@ -21,8 +21,6 @@
 "./SPL/src/stm32f30x_usart.o"
 "./SPL/src/stm32f30x_wwdg.o"
 "./Src/30010_io.o"
-"./Src/HAL_TIMER.o"
-"./Src/PWM.o"
 "./Src/ansi.o"
 "./Src/ball.o"
 "./Src/charset.o"
