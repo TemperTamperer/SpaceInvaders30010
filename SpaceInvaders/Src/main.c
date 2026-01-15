@@ -29,7 +29,10 @@ int main(void)
 
 
 	player p1 = {.x = 50, .y =SCREEN_ROWS-1, .sx =5, .sy = 3}; //defines the player at (50, 59) which is the bottom middle of the screen, with a size of 5x3
-	enemy ene = {.x = 50, .y = 4,};
+	enemy enemy_pool[MAX_ENEMIES];
+
+	enemy_pool[0] = (enemy){.x = 50, .y = 4, .alive = 1};
+	enemy_pool[1] = (enemy){.x = 10, .y = 4, .alive = 1};
 	uint8_t input = 0;
 	while (1){
 		 if (timer_flag)
@@ -39,9 +42,13 @@ int main(void)
 		        input = read_joystick();
 
 		        clear_buffer(current_buffer);
+
 		        player_update_pos(input, &p1);
+		        enemies_update_pos(enemy_pool);
+
 		        player_push_buffer(current_buffer, p1);
-				enemy_push_buffer(current_buffer, ene);
+		        enemies_push_buffer(current_buffer, enemy_pool);
+				//
 		        draw_buffer(current_buffer, shadow_buffer);
 		    }
 }

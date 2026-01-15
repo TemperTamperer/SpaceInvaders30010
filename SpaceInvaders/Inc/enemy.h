@@ -10,6 +10,7 @@ typedef struct{
 	uint8_t alive; //flag telling if enemy is dead or alie
 } enemy;
 
-void enemy_push_buffer(uint8_t buffer[][SCREEN_COLS], enemy ene);
+void enemies_push_buffer(uint8_t buffer[][SCREEN_COLS], enemy enemy_pool[MAX_ENEMIES]);
+void enemies_update_pos(enemy enemy_pool[MAX_ENEMIES]);
 
 #endif /* ENEMY_H_ */
