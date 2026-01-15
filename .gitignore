@@ -6,6 +6,15 @@
 *.ko
 *.obj
 *.elf
+*.bin
+*.map
+*.hex
+*.su
+
+# Block tool-generated local settings
+.settings/
+.gdbinit
+.pdm
 
 # Linker output
 *.ilk
