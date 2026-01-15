@@ -12,5 +12,6 @@ typedef struct{
 
 void enemies_push_buffer(uint8_t buffer[][SCREEN_COLS], enemy enemy_pool[MAX_ENEMIES]);
 void enemies_update_pos(enemy enemy_pool[MAX_ENEMIES]);
+void enemies_spawn(enemy enemy_pool[MAX_ENEMIES]);
 
 #endif /* ENEMY_H_ */

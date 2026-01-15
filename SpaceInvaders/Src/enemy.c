@@ -29,7 +29,6 @@ void enemies_push_buffer(uint8_t buffer[][SCREEN_COLS], enemy enemy_pool[MAX_ENE
 }
 
 void enemies_update_pos(enemy enemy_pool[MAX_ENEMIES]){
-
 	for(uint8_t e = 0; e < MAX_ENEMIES; e++){
 		if(enemy_pool[e].alive == 1){
 			if(enemy_pool[e].y < PLAYER_COLLISION_LINE - 1){
@@ -41,12 +40,17 @@ void enemies_update_pos(enemy enemy_pool[MAX_ENEMIES]){
 		}
 
 	}
+}
 
-	/*
-	for(uint8_t i = 0; i < MAX_ENEMIES; i++){
-		if(enemy_pool[i].alive == 1){
-			enemy_pool[i].y -= 1;
+void enemies_spawn(enemy enemy_pool[MAX_ENEMIES]){
+	for(uint8_t e = 0; e < SPAWN_AMOUNT; e++){
+		for(uint8_t i = 0; i < MAX_ENEMIES; i++){
+			if(enemy_pool[i].alive == 0){
+				enemy_pool[i].x = e * (SCREEN_COLS / SPAWN_AMOUNT);
+				enemy_pool[i].y = 4;
+				enemy_pool[i].alive = 1;
+				break;
+			}
 		}
 	}
-	*/
 }
