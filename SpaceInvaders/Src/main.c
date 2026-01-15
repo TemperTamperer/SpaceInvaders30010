@@ -7,6 +7,7 @@
 #include "timer.h"
 #include "joystick.h"
 
+#include "enemy.h"
 
 int main(void)
 {
@@ -28,6 +29,7 @@ int main(void)
 
 
 	player p1 = {.x = 50, .y =SCREEN_ROWS-1, .sx =5, .sy = 3}; //defines the player at (50, 59) which is the bottom middle of the screen, with a size of 5x3
+	enemy ene = {.x = 50, .y = 4,};
 	uint8_t input = 0;
 	while (1){
 		 if (timer_flag)
@@ -39,6 +41,7 @@ int main(void)
 		        clear_buffer(current_buffer);
 		        player_update_pos(input, &p1);
 		        player_push_buffer(current_buffer, &p1);
+				enemy_push_buffer(current_buffer, ene);
 		        draw_buffer(current_buffer, shadow_buffer);
 		    }
 }
