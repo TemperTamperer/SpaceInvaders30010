@@ -19,3 +19,7 @@ void enemy_push_buffer(uint8_t buffer[][SCREEN_COLS], enemy ene){
 			}
 		}
 }
+
+void enemy_update_pos(){
+
+}

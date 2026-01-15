@@ -40,7 +40,7 @@ int main(void)
 
 		        clear_buffer(current_buffer);
 		        player_update_pos(input, &p1);
-		        player_push_buffer(current_buffer, &p1);
+		        player_push_buffer(current_buffer, p1);
 				enemy_push_buffer(current_buffer, ene);
 		        draw_buffer(current_buffer, shadow_buffer);
 		    }
