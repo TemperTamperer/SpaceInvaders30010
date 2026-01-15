@@ -1,3 +1,5 @@
+**/Debug/
+
 # Prerequisites
 *.d
 
@@ -10,6 +12,7 @@
 *.map
 *.hex
 *.su
+*.mk
 
 # Block tool-generated local settings
 .settings/
