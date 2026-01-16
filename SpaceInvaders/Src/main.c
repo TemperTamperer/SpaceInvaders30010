@@ -36,13 +36,6 @@ int main(void)
 	asteroid ast = {.x = 2, .y = 20, .sx =9, .sy = 7, .alive = 1, .clean = 1}; //Defines
 	memset(enemy_pool, 0, sizeof(enemy_pool));
 
-
-
-	/*
-	enemy_pool[0] = (enemy){.x = 50, .y = 4, .alive = 1};
-	enemy_pool[1] = (enemy){.x = 10, .y = 4, .alive = 1};
-	*/
-
 	uint8_t input = 0;
 	while (1){
 		 if (timer_flag){
@@ -55,7 +48,7 @@ int main(void)
 
 		        clear_buffer(current_buffer);
 
-		        //Game checks
+
 		        player_update_pos(input, &p1);
 		        if(enemy_move_counter >= 15){
 		        	enemy_move_counter = 0;

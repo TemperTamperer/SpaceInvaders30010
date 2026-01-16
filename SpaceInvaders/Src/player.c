@@ -1,39 +1,52 @@
 #include "player.h"
 #include "joystick.h"
 
-void player_push_buffer(uint8_t buffer[][SCREEN_COLS], player p){
 /* Player sprite:
      ^
  	/ \
    /═█═\
 */
 
-	//Array containing all characters used in above player sprite
-	uint8_t player_sprite[3][5] = {
-	    {' ', ' ', '^', ' ', ' '},
+//Array containing all characters used in above player sprite
+static const uint8_t player_sprite[3][5] = {
+		{' ', ' ', '^', ' ', ' '},
 	    {' ', '/', ' ', '\\', ' '},
 	    {'/', 205, 219, 205, '\\'}
-	};
-	uint8_t player_dead_sprite[3][5] = {
-		    {' ', ' ', ',', ' ', ' '},
-		    {' ', '\\', ' ', '\\', ' '},
-		    {'o', '-', ' ', 205, '/'}
-		};
+};
+static const uint8_t player_dead_sprite[3][5] = {
+		{' ', ' ', ',', ' ', ' '},
+		{' ', '\\', ' ', '\\', ' '},
+		{'o', '-', ' ', 205, '/'}
+};
+
+void player_push_buffer(uint8_t buffer[][SCREEN_COLS], player p){
 
 	//Goes through character array and push them to buffer
 	if(p.alive == 1){
 		for(int i = 0; i < 3; i++){
 			for(int j = 0; j < 5; j++){
-				buffer[p.y - i][p.x + j] = player_sprite[p.sy - i - 1][j]; //Magic number -1 is to fix index offset
+				int ty = p.y - i;
+				int tx = p.x + j;
+				if(ty >= 0 && ty < SCREEN_ROWS && tx >= 0 && tx < SCREEN_COLS) {
+					if (player_sprite[2 - i][j] != ' ') {
+						buffer[ty][tx] = player_sprite[2 - i][j];
+					}
+				}
 			}
 		}
 	}
 	else{
 		for(int i = 0; i < 3; i++){
-					for(int j = 0; j < 5; j++){
-						buffer[p.y - i][p.x + j] = player_dead_sprite[p.sy - i - 1][j]; //Magic number -1 is to fix index offset
+			for(int j = 0; j < 5; j++){
+				int ty = p.y - i;
+				int tx = p.x + j;
+				if(ty >= 0 && ty < SCREEN_ROWS && tx >= 0 && tx < SCREEN_COLS) {
+					if (player_sprite[2 - i][j] != ' ') {
+						buffer[ty][tx] = player_sprite[2 - i][j];
 					}
 				}
+			}
+		}
 	}
 }
 

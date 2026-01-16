@@ -1,6 +1,5 @@
 #include "asteroids.h"
 
-void asteroid_push_buffer(uint8_t buffer[][SCREEN_COLS], asteroid ast){
 	/* Asteroid sprite (7x9):
 	     .---.
 	    / *   \
@@ -10,7 +9,7 @@ void asteroid_push_buffer(uint8_t buffer[][SCREEN_COLS], asteroid ast){
 	    \  _  /
 	     '---'
 	*/
-	uint8_t asteroid_sprite[7][9] = {
+	static const uint8_t asteroid_sprite[7][9] = {
 	    {' ', ' ', '.', '-', '-', '-', '.', ' ', ' '},
 	    {' ','/', ' ', '*', ' ', ' ', ' ', '\\', ' '},
 	    {'(', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ')'},
@@ -20,6 +19,7 @@ void asteroid_push_buffer(uint8_t buffer[][SCREEN_COLS], asteroid ast){
 	    {' ', ' ', '\'', '-', '-', '-', '\'', ' ', ' '}
 	};
 
+void asteroid_push_buffer(uint8_t buffer[][SCREEN_COLS], asteroid ast){
 	if(ast.alive == 1){
 		for(int i = 0; i < 7; i++){
 			for(int j = 0; j < 9; j++){

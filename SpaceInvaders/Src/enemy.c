@@ -1,23 +1,29 @@
 #include "enemy.h"
 
-void enemies_push_buffer(uint8_t buffer[][SCREEN_COLS], enemy enemy_pool[MAX_ENEMIES]){
-
 	/*
 	(XXX)
 	) X (
 	(XVX)
 	 */
-	uint8_t alien_lasher[3][5] = {
+	static const uint8_t alien_lasher[3][5] = {
 		{'(','X','X','X',')'},
 		{')',' ','X',' ','('},
 		{'(','X','V','X',')'},
 	};
 
+
+void enemies_push_buffer(uint8_t buffer[][SCREEN_COLS], enemy enemy_pool[MAX_ENEMIES]){
 	for(uint8_t e = 0; e < MAX_ENEMIES; e++){
 		if(enemy_pool[e].alive == 1){
 			for(int i = 0; i < 3; i++){
 				for(int j = 0; j < 5; j++){
-					buffer[enemy_pool[e].y - i][enemy_pool[e].x + j] = alien_lasher[2 - i][j];
+					int ty = enemy_pool[e].y - i;
+					int tx = enemy_pool[e].x + j;
+					if(ty >= 0 && ty < SCREEN_ROWS && tx >= 0 && tx < SCREEN_COLS) {
+						if (alien_lasher[2 - i][j] != ' ') {
+							buffer[ty][tx] = alien_lasher[2 - i][j];
+						}
+					}
 				}
 			}
 		}
