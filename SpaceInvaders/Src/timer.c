@@ -6,9 +6,9 @@ volatile uint8_t timer_flag;
 void timer15_init(){
 	RCC->APB2ENR |= RCC_APB2Periph_TIM15; // Enable clock line to timer 15;
 	TIM15->CR1 = 0x0000; // Configure timer 15
-	//Interrupt happens every 100 miliseconds
+	//Interrupt happens every 50 miliseconds
 	TIM15->ARR = 0xFA00; // Set reload value 64000 decimal
-	TIM15->PSC = 0x0063; // Set prescale value 99 decimal
+	TIM15->PSC = 0x0031; // Set prescale value 49 decimal
 
 	// --- ADD THIS LINE ---
 	TIM15->EGR |= 0x0001; // Force an update to load PSC and ARR values

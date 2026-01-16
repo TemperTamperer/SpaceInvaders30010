@@ -3,19 +3,18 @@
 
 #include "game_settings.h"
 #include "stdint.h"
+#include "enemy.h"
 
 typedef struct{
 	uint16_t x, y; //position
-	uint8_t alive;
-	uint8_t clean;
+	uint16_t sx, sy; //dimensions
+	uint8_t alive; //on screen
+	uint8_t clean; //Is clean until enemy collision
 } asteroid;
 
+void asteroid_push_buffer(uint8_t buffer[][SCREEN_COLS], asteroid ast);
+void asteroid_update_pos(asteroid *ast);
+void asteroid_enemies_collision(asteroid *ast, enemy enemy_pool[MAX_ENEMIES]);
 
-typedef struct{
-	uint16_t x, y; //position
-	uint8_t sx, sy; //width (sx), height(sy) of player hitbox
-	uint8_t hp; //health points for the player. When zero game end
-	uint8_t alive; //flag telling if enemy is dead or alie
-} enemy;
 
 #endif /* ASTEROIDS_H_ */

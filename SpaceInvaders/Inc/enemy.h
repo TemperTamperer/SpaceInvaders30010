@@ -3,6 +3,7 @@
 #include "stdint.h"
 #include "game_settings.h"
 #include "player.h"
+#include "enemy.h"
 
 typedef struct{
 	uint16_t x, y; //position
