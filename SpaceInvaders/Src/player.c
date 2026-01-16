@@ -42,7 +42,7 @@ void player_push_buffer(uint8_t buffer[][SCREEN_COLS], player p){
 				int tx = p.x + j;
 				if(ty >= 0 && ty < SCREEN_ROWS && tx >= 0 && tx < SCREEN_COLS) {
 					if (player_sprite[2 - i][j] != ' ') {
-						buffer[ty][tx] = player_sprite[2 - i][j];
+						buffer[ty][tx] = player_dead_sprite[2 - i][j];
 					}
 				}
 			}
