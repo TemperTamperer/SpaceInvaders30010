@@ -30,7 +30,7 @@ int main(void)
 
 
 
-	player p1 = {.x = 50, .y =SCREEN_ROWS-1, .sx =5, .sy = 3}; //defines the player at (50, 59) which is the bottom middle of the screen, with a size of 5x3
+	player p1 = {.x = 30, .y =SCREEN_ROWS-1, .sx =5, .sy = 3, .hp = 3, .alive = 1}; //defines the player at (50, 59) which is the bottom middle of the screen, with a size of 5x3
 	enemy enemy_pool[MAX_ENEMIES];
 	memset(enemy_pool, 0, sizeof(enemy_pool));
 
@@ -43,8 +43,7 @@ int main(void)
 
 	uint8_t input = 0;
 	while (1){
-		 if (timer_flag)
-		    {
+		 if (timer_flag){
 		        timer_flag = 0;
 		        enemy_spawn_counter++;
 		        enemy_move_counter++;
@@ -54,12 +53,16 @@ int main(void)
 
 		        clear_buffer(current_buffer);
 
+		        //Game checks
 		        player_update_pos(input, &p1);
-		        if(enemy_move_counter > 15){
+		        if(enemy_move_counter >= 30){
 		        	enemy_move_counter = 0;
 		        	enemies_update_pos(enemy_pool);
 		        }
-		        if(enemy_spawn_counter > 30){
+		        enemies_player_collision(enemy_pool, &p1);
+		        player_condition(&p1);
+
+		        if(enemy_spawn_counter >= 60){
 		        	enemy_spawn_counter = 0;
 		        	enemies_spawn(enemy_pool);
 
