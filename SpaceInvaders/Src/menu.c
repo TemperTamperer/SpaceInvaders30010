@@ -44,6 +44,8 @@ void boss_draw(void)
 
     gotoxy(40, 20);
     printf("SIKE");
+    gotoxy(60, 20);
+        printf("To continue press Center");
 
 
 }
