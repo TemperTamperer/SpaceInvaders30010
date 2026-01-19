@@ -1,27 +1,15 @@
 #include "player.h"
 #include "joystick.h"
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
+#include "bullet.h"
+
 void player_update_pos(uint8_t input, player *p1)
 {
-    // Move left
     if (input & JOY_LEFT)
     {
         if (p1->x > 1)
             p1->x--;
     }
-=======
-#include "bullet.h"
->>>>>>> Stashed changes
-=======
-#include "bullet.h"
->>>>>>> Stashed changes
-=======
-#include "bullet.h"
->>>>>>> Stashed changes
 
-    // Move right
     if (input & JOY_RIGHT)
     {
         if (p1->x < SCREEN_COLS - p1->sx - 1)
@@ -29,80 +17,73 @@ void player_update_pos(uint8_t input, player *p1)
     }
 }
 
+void player_push_buffer(uint8_t buffer[][SCREEN_COLS], player p)
+{
+    /* Player sprite:
+         ^
+        / \
+       /═█═\
+    */
 
+    uint8_t player_sprite[3][5] = {
+        {' ', ' ', '^', ' ', ' '},
+        {' ', '/', ' ', '\\', ' '},
+        {'/', 205, 219, 205, '\\'}
+    };
 
-void player_push_buffer(uint8_t buffer[][SCREEN_COLS], player *p1){
-/* Player sprite:
-     ==
- 	/ \
-   /═█═\
-*/
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            buffer[p.y - i][p.x + j] = player_sprite[p.sy - i - 1][j];
+        }
+    }
+} // ✅ VIGTIG: lukker player_push_buffer korrekt her
+void player_hit_by_enemy_bullets(Bullet *enemyBullets,
+                                 int count,
+                                 player *p)
+{
+    int left   = p->x - 3;
+    int right  = p->x + p->sx + 3;
+    int bottom = p->y;
+    int top    = p->y - p->sy - 2;
 
-	buffer[p1->y - 2][p1->x + 2] = '=';
-	buffer[p1->y - 2][p1->x + 3] = '=';
+    for (int i = 0; i < count; i++)
+    {
+        if (!enemyBullets[i].active)
+            continue;
 
-	buffer[p1->y - 1][p1->x + 1] = '/';
-	buffer[p1->y - 1][p1->x + 4] = '\\';
+        int bx = (int)(enemyBullets[i].x >> BULLET_FP_SHIFT);
+        int by = (int)(enemyBullets[i].y >> BULLET_FP_SHIFT);
 
-<<<<<<< Updated upstream
-	buffer[p1->y][p1->x + 0] = '/';
-	buffer[p1->y][p1->x + 1] = '=';
-	buffer[p1->y][p1->x + 2] = '█';
-	buffer[p1->y][p1->x + 3] = '=';
-	buffer[p1->y][p1->x + 4] = '\\';
-=======
-	//Goes through character array and push them to buffer
-	if(p.alive == 1){
-		for(int i = 0; i < 3; i++){
-			for(int j = 0; j < 5; j++){
-				int ty = p.y - i;
-				int tx = p.x + j;
-				if(ty >= 0 && ty < SCREEN_ROWS && tx >= 0 && tx < SCREEN_COLS) {
-					if (player_sprite[2 - i][j] != ' ') {
-						buffer[ty][tx] = player_sprite[2 - i][j];
-					}
-				}
-			}
-		}
-	}
-	else{
-		for(int i = 0; i < 3; i++){
-			for(int j = 0; j < 5; j++){
-				int ty = p.y - i;
-				int tx = p.x + j;
-				if(ty >= 0 && ty < SCREEN_ROWS && tx >= 0 && tx < SCREEN_COLS) {
-					if (player_sprite[2 - i][j] != ' ') {
-						buffer[ty][tx] = player_dead_sprite[2 - i][j];
-					}
-				}
-			}
-		}
-	}
+        if (bx >= left && bx <= right &&
+            by >= top  && by <= bottom)
+        {
+            enemyBullets[i].active = 0;
+
+            p->hit_count++;
+
+            if (p->hit_count >= 5)
+            {
+                p->hit_count = 0;
+                if (p->hp > 0)
+                    p->hp--;
+            }
+
+            return;
+        }
+    }
 }
+	/*
+	//Following is the charecters pushed to the buffer at their respective x,y coordinates
+	buffer[p1.y - 2][p1.x + 2] = '^';
 
-void player_update_pos(uint8_t input, player *p){
-	if(p->alive == 1){
-    // Move left
-		if (input & JOY_LEFT)
-		{
-			if (p->x > 1)
-				p->x -= PLAYER_MOVESPEED;
-		}
+	buffer[p1.y - 1][p1.x + 1] = '/';
+	buffer[p1.y - 1][p1.x + 4] = '\\';
 
-		// Move right
-		if (input & JOY_RIGHT)
-		{
-			if (p->x < SCREEN_COLS - p->sx - 1)
-				p->x += PLAYER_MOVESPEED;
-		}
-
-		// Shoot
-
-
-	}
-}
-
-void player_condition(player *p){
-	if(p->hp < 0) p->alive = 0;
->>>>>>> Stashed changes
-}
+	buffer[p1.y][p1.x + 0] = '/';
+	buffer[p1.y][p1.x + 1] = '=';
+	buffer[p1.y][p1.x + 2] = '█';
+	buffer[p1.y][p1.x + 3] = '=';
+	buffer[p1.y][p1.x + 4] = '\\';
+	*/
