@@ -44,7 +44,7 @@ int main(void)
            p1.hit_count = 0;
     enemy enemy_pool[MAX_ENEMIES];
     memset(enemy_pool, 0, sizeof(enemy_pool));
-    asteroid ast = {.x = 2, .y = 20, .sx =9, .sy = 7, .alive = 1, .clean = 1}
+    asteroid ast = {.x = 2, .y = 20, .sx =9, .sy = 7, .alive = 1, .clean = 1};
 
 
     /* Player bullets (din eksisterende pool) */

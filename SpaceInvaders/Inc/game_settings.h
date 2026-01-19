@@ -1,18 +1,17 @@
-#ifndef GAME_SETTINGS_H_
-#define GAME_SETTINGS_H_
+#ifndef GAME_SETTINGS_H
+#define GAME_SETTINGS_H
 
 // Game board dimensions
 #define SCREEN_ROWS 40
 #define SCREEN_COLS 60
 #define BOARD_OFFSET 2
 
-#define MAX_ENEMIES 30
-#define SPAWN_AMOUNT 5
-#define SPAWN_DISTANCE (SCREEN_COLS/SPAWN_AMOUNT)
+#define MAX_ENEMIES 5
 
-#define PLAYER_COLLISION_LINE SCREEN_ROWS-5
+
+#define PLAYER_COLLISION_LINE (SCREEN_ROWS - 5)
 #define PLAYER_MOVESPEED 2
 
 #define ASTEROID_SPEED 2
 
-#endif /* GAME_SETTINGS_H_ */
+#endif /* GAME_SETTINGS_H */
