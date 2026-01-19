@@ -1,25 +1,32 @@
 #include "menu.h"
 #include "ansi.h"
+#include "game_settings.h"
 #include <stdio.h>
 
 
 
 void menu_draw(void)
 {
+	draw_border();
+
     gotoxy(20, 10);
     printf("SPACE INVADERS");
 
     gotoxy(20, 12);
-    printf("Press UP to start");
+    printf("Press Center to start");
 
     gotoxy(20, 14);
-    printf("Press down for Help");
+    printf("Press UP for Help");
 
+    gotoxy(20, 16);
+       printf("to hide game while playing press down");
 
 
 }
 void help_draw(void)
 {
+	draw_border();
+
     gotoxy(10, 10);
     printf("To move use the joystick left and right");
 
@@ -27,8 +34,16 @@ void help_draw(void)
     printf("To shot press the joystick center(press stick down)");
 
     gotoxy(20, 20);
-    printf("Press up to start game");
+    printf("Press Center to start game");
 
+}
+void boss_draw(void)
+{
+
+	draw_border();
+
+    gotoxy(40, 20);
+    printf("SIKE");
 
 
 }
@@ -36,9 +51,11 @@ void help_draw(void)
 uint8_t menu_update(uint8_t input)
 {
     // FIRE button starts game
-    if (input & JOY_UP)
+    if (input & JOY_CENTER)
         return 1;
-    else if (input & JOY_DOWN)
+    else if (input & JOY_UP)
     	return 2;
+    else if (input & JOY_DOWN)
+    	return 3;
     return 0;
 }

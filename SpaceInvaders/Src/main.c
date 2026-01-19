@@ -64,6 +64,9 @@ int main(void)
     uint8_t prev_center_pressed = 0;
     uint8_t input = 0;
 
+    game_state prev_state = -1;
+
+
     while (1)
     {
         if (!timer_flag)
@@ -71,26 +74,50 @@ int main(void)
 
         timer_flag = 0;
         input = read_joystick();
+
+        if (state != prev_state)
+                   {
+                       clrscr();
+
+                       if (state == STATE_BOSSKEY){
+                           boss_draw();
+
+                       }
+                       else if (state == STATE_MENU){
+                           menu_draw();
+
+                       }
+                       else if (state == STATE_HELP){
+                           help_draw();
+
+                       }
+                       else if (state == STATE_PLAYING){
+                           draw_border();
+
+                       }
+                       prev_state = state;
+                   }
+
         switch(state)
         {
         case STATE_MENU:
-        	menu_draw();
+
 
         	if (menu_update(input)==1)
         	            {
         	        	     clrscr();
         	        	     draw_border();
         	        	     state = STATE_PLAYING;
-        	        	            }
+        	        	}
         	if (menu_update(input)==2)
         	        	            {
         	        	        	     clrscr();
         	        	        	     draw_border();
         	        	        	     state = STATE_HELP;
-        	        	        	            }
+        	        	        	 }
         	            break;
         case STATE_HELP:
-                	help_draw();
+
                 	if (menu_update(input)==1)
                 	            {
                 	                clrscr();
@@ -98,7 +125,20 @@ int main(void)
                 	                state = STATE_PLAYING;
                 	            }
                 	break;
+        case STATE_BOSSKEY:
+            if (menu_update(input) == 1)
+            {
+                state = STATE_PLAYING;
+            }
+            break;
+
         case STATE_PLAYING:
+            if (menu_update(input) == 3)
+            {
+                state = STATE_BOSSKEY;
+                break;
+            }
+
             enemy_spawn_counter++;
             enemy_move_counter++;
 
