@@ -10,6 +10,14 @@
 #include "bullet.h"
 #include <stdint.h>
 #include <string.h>
+<<<<<<< Updated upstream
+=======
+
+#define TICKS_PER_SECOND 20
+#define POWERUP_SECONDS  5
+#define POWERUP_TICKS    (POWERUP_SECONDS * TICKS_PER_SECOND)
+#define ENEMY_BULLET_POOL_SIZE 16
+>>>>>>> Stashed changes
 
 
 #define TICKS_PER_SECOND 20
@@ -84,13 +92,100 @@ int main(void)
     Bullet enemyBullets[ENEMY_BULLET_POOL_SIZE];
     bullets_init(enemyBullets, ENEMY_BULLET_POOL_SIZE);
 
+<<<<<<< Updated upstream
     uint8_t prev_center_pressed = 0;
     uint8_t input = 0;
+=======
+    uint8_t input = 0;
+
+    uint8_t prev_center_pressed = 0;
+    while (1)
+    {
+        if (timer_flag)
+        {
+            timer_flag = 0;
+            enemy_spawn_counter++;
+            enemy_move_counter++;
+
+            bonus_spawn_tick(enemy_pool);
+
+            input = read_joystick();
+
+            clear_buffer(current_buffer);
+
+            /* Bevægelse: kun retninger (center påvirker ikke movement) */
+            uint8_t move_input = input & (JOY_UP | JOY_DOWN | JOY_LEFT | JOY_RIGHT);
+            player_update_pos(move_input, &p1);
+
+            /* Skyd (player) */
+            uint8_t center_just_pressed = joystick_just_pressed(input, JOY_CENTER, &prev_center_pressed);
+            int startX = (p1.x + (p1.sx / 2));
+            int startY = (p1.y - 1);
+
+            bullets_handle_shoot(bullets, BULLET_POOL_SIZE, center_just_pressed, startX, startY);
+            bullets_powerup_tick();
+
+            bullets_update(bullets, BULLET_POOL_SIZE);
+            bullets_update(enemyBullets, ENEMY_BULLET_POOL_SIZE);
+
+            /* Enemy move/spawn */
+            if (enemy_move_counter > 15)
+            {
+                enemy_move_counter = 0;
+                enemies_update_pos(enemy_pool);
+            }
+
+            if (enemy_spawn_counter > 80)
+            {
+                enemy_spawn_counter = 0;
+                enemies_spawn(enemy_pool);
+            }
+
+            /* NYT: Fjender skyder (logikken ligger i enemy.c) */
+            enemies_shoot(enemy_pool, enemyBullets, ENEMY_BULLET_POOL_SIZE);
+
+            /* Opdater enemy bullets */
+            bullets_update(enemyBullets, ENEMY_BULLET_POOL_SIZE);
+            player_hit_by_enemy_bullets(enemyBullets,  ENEMY_BULLET_POOL_SIZE, &p1);
+            /* Hit enemies med player bullets (din eksisterende) */
+            if (p1.hp == 0)
+            {
+                draw_game_over(score,highscore);
+                while (1) { } // stop spillet her (simpelt)
+            }
+            int bonus_collected = 0;
+            int kills = bullets_hit_enemies(bullets, BULLET_POOL_SIZE, enemy_pool, &bonus_collected);
+
+            if (kills > 0)
+            {
+                score += (uint32_t)(kills * 10);
+                if (score > highscore)
+                    highscore = score;
+            }
+
+            if (bonus_collected)
+                bullets_powerup_activate(POWERUP_TICKS);
+
+            /* TEST: bonus efter 20 kills */
+            if (bullets_test_should_powerup(20))
+                bullets_powerup_activate(POWERUP_TICKS);
+
+            /* Draw */
+            player_push_buffer(current_buffer, p1);
+            enemies_push_buffer(current_buffer, enemy_pool);
+
+            /* Tegn først enemy bullets, så player bullets ovenpå (valgfrit) */
+            bullets_push_buffer(current_buffer, enemyBullets, ENEMY_BULLET_POOL_SIZE);
+            bullets_push_buffer(current_buffer, bullets, BULLET_POOL_SIZE);
+>>>>>>> Stashed changes
 
 
+            draw_buffer(current_buffer, shadow_buffer);
+            ui_draw_status(p1.hp, p1.hit_count, score, highscore);
 
     uint8_t input = 0;
 
+<<<<<<< Updated upstream
     uint8_t prev_center_pressed = 0;
 
     while (1)
@@ -177,6 +272,8 @@ int main(void)
             ui_draw_status(p1.hp, p1.hit_count, score, highscore);
 
 
+=======
+>>>>>>> Stashed changes
         }
     }
 }

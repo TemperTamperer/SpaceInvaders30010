@@ -12,7 +12,10 @@
 #define MAX_ENEMIES 30
 //#define SPAWN_AMOUNT 5
 //#define SPAWN_AMOUNT 5
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 #define SPAWN_DISTANCE (SCREEN_COLS/SPAWN_AMOUNT)
 #define PLAYER_COLLISION_LINE SCREEN_ROWS-5
 
