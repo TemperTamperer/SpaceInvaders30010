@@ -1,5 +1,11 @@
 #include "joystick.h"
-
+ uint8_t joystick_just_pressed(uint8_t input, uint8_t mask, uint8_t *prev)
+    {
+        uint8_t now = (input & mask) ? 1 : 0;
+        uint8_t jp  = (now && !(*prev)) ? 1 : 0;
+        *prev = now;
+        return jp;
+    }
 void GPIO_init(){
 	RCC->AHBENR |= RCC_AHBPeriph_GPIOA; // Enable clock for GPIO Port A
 	// Set pin PA0 to input
