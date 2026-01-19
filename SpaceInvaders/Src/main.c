@@ -6,6 +6,9 @@
 #include "ansi.h"
 #include "timer.h"
 #include "joystick.h"
+
+#include "asteroids.h"
+
 #include "enemy.h"
 #include "bullet.h"
 #include <stdint.h>
@@ -41,6 +44,8 @@ int main(void)
            p1.hit_count = 0;
     enemy enemy_pool[MAX_ENEMIES];
     memset(enemy_pool, 0, sizeof(enemy_pool));
+    asteroid ast = {.x = 2, .y = 20, .sx =9, .sy = 7, .alive = 1, .clean = 1}
+
 
     /* Player bullets (din eksisterende pool) */
     Bullet* bullets = bullets_get_pool();
@@ -104,6 +109,9 @@ int main(void)
             bullets_update(enemyBullets, ENEMY_BULLET_POOL_SIZE);
             player_hit_by_enemy_bullets(enemyBullets,  ENEMY_BULLET_POOL_SIZE, &p1);
             /* Hit enemies med player bullets (din eksisterende) */
+
+            asteroid_update_pos(&ast);
+
             if (p1.hp == 0)
             {
                 draw_game_over(score,highscore);
@@ -126,6 +134,7 @@ int main(void)
             if (bullets_test_should_powerup(20))
                 bullets_powerup_activate(POWERUP_TICKS);
 
+            asteroid_enemies_collision(&ast, enemy_pool);    
             /* Draw */
             player_push_buffer(current_buffer, p1);
             enemies_push_buffer(current_buffer, enemy_pool);
@@ -133,12 +142,10 @@ int main(void)
             /* Tegn først enemy bullets, så player bullets ovenpå (valgfrit) */
             bullets_push_buffer(current_buffer, enemyBullets, ENEMY_BULLET_POOL_SIZE);
             bullets_push_buffer(current_buffer, bullets, BULLET_POOL_SIZE);
-
+            asteroid_push_buffer(current_buffer, ast);
 
             draw_buffer(current_buffer, shadow_buffer);
             ui_draw_status(p1.hp, p1.hit_count, score, highscore);
-
-
         }
     }
 }

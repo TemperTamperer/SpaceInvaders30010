@@ -1,9 +1,11 @@
 #ifndef ENEMY_H_
 #define ENEMY_H_
 
+
 #include <stdint.h>
 #include "game_settings.h"
 #include "player.h"
+#include "enemy.h"
 
 typedef struct Bullet Bullet;
 typedef struct
@@ -19,9 +21,11 @@ void enemies_push_buffer(uint8_t buffer[SCREEN_ROWS][SCREEN_COLS],
                          enemy enemy_pool[MAX_ENEMIES]);
 
 void enemies_update_pos(enemy enemy_pool[MAX_ENEMIES]);
+uint8_t enemies_player_collision(enemy enemy_pool[MAX_ENEMIES], player *p);
 void enemies_spawn(enemy enemy_pool[MAX_ENEMIES]);
 void enemies_shoot(enemy enemy_pool[],
                    Bullet *enemyBullets,
                    int bullet_count);
+
 
 #endif /* ENEMY_H_ */
