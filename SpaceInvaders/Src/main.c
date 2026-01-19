@@ -6,14 +6,25 @@
 #include "ansi.h"
 #include "timer.h"
 #include "joystick.h"
+<<<<<<< Updated upstream
+=======
+#include "asteroids.h"
+#include "bullet.h"
+#include "collision.h"
+>>>>>>> Stashed changes
 
 
 int main(void)
 {
+	bullet bullets[MAX_BULLETS];
+
 	uart_init(115200);
 	timer15_init();
 	GPIO_init();
+	bullets_init(bullets);
 	printf("\x1B[?25h");
+
+
 
 
 	clrscr(); //Ensures putty terminal is clear before anything
@@ -38,7 +49,38 @@ int main(void)
 
 		        clear_buffer(current_buffer);
 		        player_update_pos(input, &p1);
+<<<<<<< Updated upstream
 		        player_push_buffer(current_buffer, &p1);
+=======
+		        bullets_update(bullets);
+		        if(enemy_move_counter >= 15){
+		        	enemy_move_counter = 0;
+		        	enemies_update_pos(enemy_pool);
+		        	asteroid_update_pos(&ast);
+		        }
+		        asteroid_enemies_collision(&ast, enemy_pool);
+		        enemies_player_collision(enemy_pool, &p1);
+		        player_condition(&p1);
+
+		        if(enemy_spawn_counter >= 30){
+		        	enemy_spawn_counter = 0;
+		        	enemies_spawn(enemy_pool);
+
+		        }
+
+		    	if (input & JOY_UP)
+		    		{
+		    		    bullets_fire(bullets, p1.x + p1.sx / 2, p1.y - 1);
+		    		}
+
+		    	bullets_vs_enemies(bullets, enemies, enemy_pool);
+
+		        player_push_buffer(current_buffer, p1);
+		        enemies_push_buffer(current_buffer, enemy_pool);
+		        asteroid_push_buffer(current_buffer, ast);
+		        bullets_draw(bullets, current_buffer);
+				//
+>>>>>>> Stashed changes
 		        draw_buffer(current_buffer, shadow_buffer);
 		    }
 }

@@ -7,7 +7,8 @@
 #define JOY_DOWN   (1 << 1)
 #define JOY_LEFT   (1 << 2)
 #define JOY_RIGHT  (1 << 3)
-#define JOY_CENTER (1 << 4)
+#define JOY_FIRE (1 << 4)
+
 
 
 void GPIO_init();
