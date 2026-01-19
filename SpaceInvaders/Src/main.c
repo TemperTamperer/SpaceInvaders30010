@@ -12,6 +12,9 @@
 #include "bullet.h"
 #include "collision.h"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -26,6 +29,8 @@ int main(void)
 	GPIO_init();
 	bullets_init(bullets);
 	printf("\x1B[?25h");
+
+
 
 
 
@@ -56,8 +61,11 @@ int main(void)
 		        player_update_pos(input, &p1);
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 		        player_push_buffer(current_buffer, &p1);
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 		        bullets_update(bullets);

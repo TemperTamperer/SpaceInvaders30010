@@ -2,6 +2,7 @@
 #include "joystick.h"
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 void player_update_pos(uint8_t input, player *p1)
 {
     // Move left
@@ -10,6 +11,9 @@ void player_update_pos(uint8_t input, player *p1)
         if (p1->x > 1)
             p1->x--;
     }
+=======
+#include "bullet.h"
+>>>>>>> Stashed changes
 =======
 #include "bullet.h"
 >>>>>>> Stashed changes
