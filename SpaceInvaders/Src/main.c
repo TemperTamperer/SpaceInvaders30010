@@ -10,6 +10,14 @@
 #include "bullet.h"
 #include <stdint.h>
 #include <string.h>
+<<<<<<< Updated upstream
+=======
+
+#define TICKS_PER_SECOND 20
+#define POWERUP_SECONDS  5
+#define POWERUP_TICKS    (POWERUP_SECONDS * TICKS_PER_SECOND)
+#define ENEMY_BULLET_POOL_SIZE 16
+>>>>>>> Stashed changes
 
 #define TICKS_PER_SECOND 20
 #define POWERUP_SECONDS  5
@@ -52,9 +60,16 @@ int main(void)
     /* Enemy bullets (egen pool) */
     Bullet enemyBullets[ENEMY_BULLET_POOL_SIZE];
     bullets_init(enemyBullets, ENEMY_BULLET_POOL_SIZE);
+<<<<<<< Updated upstream
     uint8_t prev_center_pressed = 0;
     uint8_t input = 0;
 
+=======
+
+    uint8_t input = 0;
+
+    uint8_t prev_center_pressed = 0;
+>>>>>>> Stashed changes
     while (1)
     {
         if (timer_flag)
