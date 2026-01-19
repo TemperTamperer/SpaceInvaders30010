@@ -75,13 +75,29 @@ int main(void)
         {
         case STATE_MENU:
         	menu_draw();
-        	if (menu_update(input))
+
+        	if (menu_update(input)==1)
         	            {
-        	                clrscr();
-        	                draw_border();
-        	                state = STATE_PLAYING;
-        	            }
+        	        	     clrscr();
+        	        	     draw_border();
+        	        	     state = STATE_PLAYING;
+        	        	            }
+        	if (menu_update(input)==2)
+        	        	            {
+        	        	        	     clrscr();
+        	        	        	     draw_border();
+        	        	        	     state = STATE_HELP;
+        	        	        	            }
         	            break;
+        case STATE_HELP:
+                	help_draw();
+                	if (menu_update(input)==1)
+                	            {
+                	                clrscr();
+                	                draw_border();
+                	                state = STATE_PLAYING;
+                	            }
+                	break;
         case STATE_PLAYING:
             enemy_spawn_counter++;
             enemy_move_counter++;
