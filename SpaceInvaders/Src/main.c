@@ -6,8 +6,9 @@
 #include "ansi.h"
 #include "timer.h"
 #include "joystick.h"
-
+#include "game_state.h"
 #include "asteroids.h"
+#include "game_state.h"
 
 #include "enemy.h"
 #include "bullet.h"
@@ -18,6 +19,9 @@
 #define POWERUP_SECONDS  5
 #define POWERUP_TICKS    (POWERUP_SECONDS * TICKS_PER_SECOND)
 #define ENEMY_BULLET_POOL_SIZE 16
+
+game_state state = STATE_MENU;
+
 int main(void)
 {
     uart_init(115200);
@@ -62,15 +66,29 @@ int main(void)
 
     while (1)
     {
-        if (timer_flag)
+        if (!timer_flag)
+        	continue;
+
+        timer_flag = 0;
+        input = read_joystick();
+        switch(state)
         {
-            timer_flag = 0;
+        case STATE_MENU:
+        	menu_draw();
+        	if (menu_update(input))
+        	            {
+        	                clrscr();
+        	                draw_border();
+        	                state = STATE_PLAYING;
+        	            }
+        	            break;
+        case STATE_PLAYING:
             enemy_spawn_counter++;
             enemy_move_counter++;
 
             bonus_spawn_tick(enemy_pool);
 
-            input = read_joystick();
+
 
             clear_buffer(current_buffer);
 
@@ -146,6 +164,7 @@ int main(void)
 
             draw_buffer(current_buffer, shadow_buffer);
             ui_draw_status(p1.hp, p1.hit_count, score, highscore);
+            break;
         }
     }
 }
