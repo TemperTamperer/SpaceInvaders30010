@@ -1,23 +1,68 @@
 #include "draw.h"
+#include "ansi.h"
 #include <stdio.h>
 #include <string.h>
 
+#define LEVEL_BOX_W 20
+#define LEVEL_BOX_H 3
+#define LEVEL_BOX_ROW (2 + (SCREEN_ROWS / 2))
+#define LEVEL_BOX_COL (2 + ((SCREEN_COLS - LEVEL_BOX_W) / 2))
+
+void draw_game_init_screen(void)
+{
+    clrscr();
+    draw_border();
+    printf("\x1B[?25l");
+}
+
+void draw_level_box(uint8_t level)
+{
+    char text[16];
+    int len = sprintf(text, "LEVEL %u", (unsigned)level);
+    int text_col = LEVEL_BOX_COL + (LEVEL_BOX_W - len) / 2;
+
+    printf("\x1B[%d;%dH\xC9", LEVEL_BOX_ROW, LEVEL_BOX_COL);
+    for (int i = 0; i < LEVEL_BOX_W - 2; i++) putchar('\xCD');
+    printf("\xBB");
+
+    printf("\x1B[%d;%dH\xBA", LEVEL_BOX_ROW + 1, LEVEL_BOX_COL);
+    printf("\x1B[%d;%dH%s", LEVEL_BOX_ROW + 1, text_col, text);
+    printf("\x1B[%d;%dH\xBA", LEVEL_BOX_ROW + 1, LEVEL_BOX_COL + LEVEL_BOX_W - 1);
+
+    printf("\x1B[%d;%dH\xC8", LEVEL_BOX_ROW + 2, LEVEL_BOX_COL);
+    for (int i = 0; i < LEVEL_BOX_W - 2; i++) putchar('\xCD');
+    printf("\xBC");
+}
+
+void draw_level_box_clear(void)
+{
+    for (int r = 0; r < LEVEL_BOX_H; r++)
+    {
+        printf("\x1B[%d;%dH", LEVEL_BOX_ROW + r, LEVEL_BOX_COL);
+        for (int i = 0; i < LEVEL_BOX_W; i++) putchar(' ');
+    }
+}
+
 void ui_draw_status(uint8_t hp, uint8_t hits, uint32_t score, uint32_t highscore)
 {
-    printf("\x1B[2;3H");        // fast placering (som du havde)
-    printf("\x1B[2K");          // ryd hele linjen
+    const int row = 2;
+    const int col = 2;
 
-    // HP som ###
-    printf("HP: ");
+    printf("\x1B[%d;%dH", row, col);
+
+    printf("HP:");
     for (uint8_t i = 0; i < hp; i++)
-        printf("\x1B[31m###\x1B[0m ");
+        printf("\x1B[31m#\x1B[0m");
 
-    // Hits + score + high
-    printf(" Hits: %u/5  Score: %lu  High: %lu",
+    printf("  Hits:%u/5  Score:%lu  High:%lu",
            (unsigned)hits,
            (unsigned long)score,
            (unsigned long)highscore);
+
+    printf("                ");
+
 }
+
 void draw_game_over(uint32_t score, uint32_t highscore)
 {
     clrscr();
@@ -37,10 +82,11 @@ void draw_game_over(uint32_t score, uint32_t highscore)
         "  ######      #      #######  ##   ## "
     };
 
-    const int n = (int)(sizeof(lines)/sizeof(lines[0]));
+    const int n = (int)(sizeof(lines) / sizeof(lines[0]));
 
     int maxlen = 0;
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++)
+    {
         int len = 0;
         while (lines[i][len] != '\0') len++;
         if (len > maxlen) maxlen = len;
@@ -56,9 +102,8 @@ void draw_game_over(uint32_t score, uint32_t highscore)
     if (start_col < 2) start_col = 2;
 
     printf("\x1B[31m");
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++)
         printf("\x1B[%d;%dH%s", start_row + i, start_col, lines[i]);
-    }
     printf("\x1B[0m");
 
     char scoreline[64];
@@ -66,7 +111,9 @@ void draw_game_over(uint32_t score, uint32_t highscore)
             (unsigned long)score,
             (unsigned long)highscore);
 
-    int slen = 0; while (scoreline[slen] != '\0') slen++;
+    int slen = 0;
+    while (scoreline[slen] != '\0') slen++;
+
     int score_col = 2 + (inner_w - slen) / 2;
     if (score_col < 2) score_col = 2;
 
@@ -75,12 +122,14 @@ void draw_game_over(uint32_t score, uint32_t highscore)
     printf("\x1B[?25h");
 }
 
-
 void draw_buffer(uint8_t current[][SCREEN_COLS], uint8_t shadow_buffer[][SCREEN_COLS])
 {
-    for (int r = 0; r < SCREEN_ROWS; r++) {
-        for (int c = 0; c < SCREEN_COLS; c++) {
-            if (current[r][c] != shadow_buffer[r][c]) {
+    for (int r = 0; r < SCREEN_ROWS; r++)
+    {
+        for (int c = 0; c < SCREEN_COLS; c++)
+        {
+            if (current[r][c] != shadow_buffer[r][c])
+            {
                 gotoxy(c + BOARD_OFFSET, r + BOARD_OFFSET);
                 putchar(current[r][c]);
                 shadow_buffer[r][c] = current[r][c];
@@ -102,7 +151,8 @@ void draw_border(void)
     for (int i = 0; i < SCREEN_COLS; i++) printf("\xCD");
     printf("\xBB\n");
 
-    for (int r = 0; r < SCREEN_ROWS; r++) {
+    for (int r = 0; r < SCREEN_ROWS; r++)
+    {
         printf("\xBA");
         for (int c = 0; c < SCREEN_COLS; c++) printf(" ");
         printf("\xBA\n");
