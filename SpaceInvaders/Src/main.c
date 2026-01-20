@@ -165,6 +165,7 @@ int main(void)
             bullets_handle_shoot(bullets, BULLET_POOL_SIZE, center_just_pressed, startX, startY);
             bullets_powerup_tick();
 
+            asteroid_gravity(bullets, ast);
             bullets_update(bullets, BULLET_POOL_SIZE);
             bullets_update(enemyBullets, ENEMY_BULLET_POOL_SIZE);
 
@@ -179,6 +180,7 @@ int main(void)
             {
                 enemy_spawn_counter = 0;
                 enemies_spawn(enemy_pool);
+                asteroid_update_pos(&ast);
             }
 
             /* NYT: Fjender skyder (logikken ligger i enemy.c) */
@@ -189,7 +191,6 @@ int main(void)
             player_hit_by_enemy_bullets(enemyBullets,  ENEMY_BULLET_POOL_SIZE, &p1);
             /* Hit enemies med player bullets (din eksisterende) */
 
-            asteroid_update_pos(&ast);
 
             if (p1.hp == 0)
             {
