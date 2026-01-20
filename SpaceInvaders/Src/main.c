@@ -178,6 +178,7 @@ int main(void)
 
             bullets_powerup_tick();
 
+            asteroid_gravity(bullets, ast);
             bullets_update(bullets, BULLET_POOL_SIZE);
             bullets_update(enemyBullets, ENEMY_BULLET_POOL_SIZE);
 
@@ -190,6 +191,7 @@ int main(void)
             if (enemy_spawn_counter > 80) {
                 enemy_spawn_counter = 0;
                 enemies_spawn(enemy_pool);
+                asteroid_update_pos(&ast);
             }
 
             /* Fjender skyder */
@@ -205,7 +207,6 @@ int main(void)
                 buzzer_play_sfx(SFX_PLAYER_HIT);
             }
 
-            asteroid_update_pos(&ast);
 
             /* Game over */
             if (p1.hp == 0) {
