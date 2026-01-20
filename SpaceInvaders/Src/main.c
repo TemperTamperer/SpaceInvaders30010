@@ -9,6 +9,7 @@
 #include "game_state.h"
 #include "asteroids.h"
 #include "game_state.h"
+#include "lcd.h"
 
 #include "enemy.h"
 #include "bullet.h"
@@ -26,6 +27,7 @@ int main(void)
 {
     uart_init(115200);
     timer15_init();
+    lcd_init();
     GPIO_init();
     printf("\x1B[?25h");
 
@@ -42,6 +44,9 @@ int main(void)
     uint8_t shadow_buffer[SCREEN_ROWS][SCREEN_COLS];
     memset(current_buffer, ' ', SCREEN_ROWS * SCREEN_COLS);
     memset(shadow_buffer,  ' ', SCREEN_ROWS * SCREEN_COLS);
+
+    uint8_t lcd_buffer[512];
+    memset(lcd_buffer,0x00,512);
 
     player p1 = {.x = 50, .y = SCREEN_ROWS - 1, .sx = 5, .sy = 3};
            p1.hp = 3;
@@ -219,6 +224,10 @@ int main(void)
             asteroid_push_buffer(current_buffer, ast);
 
             draw_buffer(current_buffer, shadow_buffer);
+
+        	lcd_draw_heart(p1.hp, lcd_buffer);
+        	lcd_draw_score(score, lcd_buffer);
+
             ui_draw_status(p1.hp, p1.hit_count, score, highscore);
             break;
         }
