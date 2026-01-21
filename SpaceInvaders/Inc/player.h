@@ -4,8 +4,6 @@
 #include <stdint.h>
 #include "game_settings.h"
 
-
-/* Forward declaration (VIGTIG) */
 struct Bullet;
 
 typedef struct {
@@ -20,7 +18,6 @@ void player_update_pos(uint8_t input, player *p1);
 void player_push_buffer(uint8_t buffer[][SCREEN_COLS], player p1);
 void player_condition(player *p);
 
-/* ✅ KORREKT prototype */
 void player_hit_by_enemy_bullets(struct Bullet *enemyBullets,
                                  int count,
                                  player *p);
