@@ -49,8 +49,8 @@ void asteroid_gravity(Bullet bullets[], asteroid ast){
 		int16_t by = b->y >> BULLET_FP_SHIFT;
 
 		int16_t dist = get_approx_dist(by, by, ast.x, ast.y);
-		b->vx += 100 *(ast.x - bx) / dist;
-		b->vy += 100 *(ast.y - by) / dist;
+		b->vx += 10 * ((ast.x + (ast.sx >> 1)) - bx) / (dist);
+		b->vy += 10 * ((ast.y + (ast.sy >> 1)) - by) / (dist);
 	}
 }
 
