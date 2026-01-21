@@ -1,13 +1,13 @@
 #ifndef GAME_SETTINGS_H
 #define GAME_SETTINGS_H
 
-// Game board dimensions
 #define SCREEN_ROWS 40
 #define SCREEN_COLS 60
 #define BOARD_OFFSET 2
 
 #define MAX_ENEMIES 5
 
+#define ASTEROID_SPEED 1
 
 #define PLAYER_COLLISION_LINE (SCREEN_ROWS - 5)
 #define PLAYER_MOVESPEED 2

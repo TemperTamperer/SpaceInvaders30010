@@ -15,7 +15,9 @@ typedef struct {
 } time_tracker;
 
 extern volatile time_tracker system_time;
+#pragma once
 
+void timer_wait_for_tick(void);
 void timer15_init();
 void TIM1_BRK_TIM15_IRQHandler(void);
 

@@ -18,6 +18,9 @@
 #include "enemy.h"
 #include "bullet.h"
 
+#include "level.h"
+#include "powerup.h"
+
 #include <stdint.h>
 #include <string.h>
 
@@ -30,6 +33,9 @@
 
 game_state state = STATE_MENU;
 
+
+
+
 int main(void)
 {
     uart_init(115200);
@@ -38,14 +44,19 @@ int main(void)
     GPIO_init();
     printf("\x1B[?25h");
 
-    uint16_t enemy_spawn_counter = 0;
-    uint16_t enemy_move_counter  = 0;
     uint32_t score = 0;
     uint32_t highscore = 0;
 
-    clrscr();
-    draw_border();
-    printf("\x1B[?25l");
+    uint16_t enemy_spawn_counter = 0;
+    uint16_t enemy_move_counter  = 0;
+
+    draw_game_init_screen();
+
+    LevelState level;
+    level_init(&level);
+
+    PowerupState powerup;
+    powerup_init(&powerup);
 
     /* ===== BUZZER INIT + BG MUSIC ===== */
     //buzzer_init();
@@ -62,35 +73,30 @@ int main(void)
     uint8_t lcd_buffer[512];
     memset(lcd_buffer,0x00,512);
 
-    player p1 = {.x = 50, .y = SCREEN_ROWS - 1, .sx = 5, .sy = 3};
-    p1.hp = 3;
-    p1.hit_count = 0;
+    player p1;
+    player_init(&p1);
 
     enemy enemy_pool[MAX_ENEMIES];
-    memset(enemy_pool, 0, sizeof(enemy_pool));
+    enemies_init(enemy_pool);
 
     asteroid ast = {.x = 2, .y = 20, .sx = 9, .sy = 7, .alive = 1, .clean = 1};
 
-    //Player bullets setup
-    Bullet* bullets = bullets_get_pool();
-    (void)bullets_get_count();
-    bullets_init(bullets, BULLET_POOL_SIZE);
-
-    //Enemy bullets setup
+    //Player and Enemy bullets setup
+    Bullet playerBullets[BULLET_POOL_SIZE];
     Bullet enemyBullets[ENEMY_BULLET_POOL_SIZE];
+    bullets_init(playerBullets, BULLET_POOL_SIZE);
     bullets_init(enemyBullets, ENEMY_BULLET_POOL_SIZE);
 
+    EnemyShootState shootState = {0};
+
     uint8_t prev_center_pressed = 0;
-    uint8_t input = 0;
+    uint8_t last_level = level_get(&level);
 
     game_state prev_state = -1;
 
     while (1)
     {
-        if (!timer_flag)
-            continue;
-
-        timer_flag = 0;
+        timer_wait_for_tick();
 
         /* ===== BUZZER TIMING =====
            Jeres tick er 20 Hz => 50 ms pr tick */
@@ -183,11 +189,15 @@ int main(void)
             uint8_t center_just_pressed =
                 joystick_just_pressed(input, JOY_CENTER, &prev_center_pressed);
 
-            int startX = (p1.x + (p1.sx / 2));
-            int startY = (p1.y - 1);
+            int startX, startY;
+            player_get_shoot_pos(&p1, &startX, &startY);
 
-            bullets_handle_shoot(bullets, BULLET_POOL_SIZE,
-                                 center_just_pressed, startX, startY);
+            powerup_shoot(&powerup,
+                      playerBullets,
+                      BULLET_POOL_SIZE,
+                      center_just_pressed,
+                      startX,
+                      startY);
 
 
             //Player bullet handling
@@ -198,7 +208,11 @@ int main(void)
                                            enemy_pool, &bonus_collected);
 
             //Enemy bullet handling
-            enemies_shoot(enemy_pool, enemyBullets, ENEMY_BULLET_POOL_SIZE);
+            enemies_shoot(enemy_pool,
+                      enemyBullets,
+                      ENEMY_BULLET_POOL_SIZE,
+                      &shootState,
+                      level_get(&level));
             bullets_update(enemyBullets, ENEMY_BULLET_POOL_SIZE);
             if(player_hit_by_enemy_bullets(enemyBullets, ENEMY_BULLET_POOL_SIZE, &p1)){
             	buzzer_play_sfx(SFX_PLAYER_HIT);;
@@ -217,10 +231,12 @@ int main(void)
                     highscore = score;
             }
 
+            /*
             if (bonus_collected) {
                 buzzer_play_sfx(SFX_BONUS);
                 bullets_powerup_activate(POWERUP_TICKS);
             }
+            */
 
             /* Game over */
             if (p1.hp == 0) {
@@ -229,15 +245,26 @@ int main(void)
             	while (1) { } // stop spillet her (simpelt)
             }
 
-            bonus_spawn_tick(enemy_pool);
+            //Level handling
+            level_update_from_score(&level, score);      
+            
+            uint8_t now_level = level_get(&level);
+            if (now_level != last_level)
+            {
+               last_level = now_level;
 
-            bullets_powerup_tick();
+                enemies_reset(enemy_pool, &shootState);
+                bullets_init(enemyBullets, ENEMY_BULLET_POOL_SIZE);
 
-            /* TEST: bonus efter 20 kills */
-            if (bullets_test_should_powerup(20))
-                bullets_powerup_activate(POWERUP_TICKS);
+                enemy_spawn_counter = 0;
+                enemy_move_counter = 0;
+            }
 
-
+            powerup_update_from_score(&powerup, score);
+            powerup_tick(&powerup);
+            
+            if (level_popup_active(&level))
+            level_popup_tick(&level);
 
             /* Draw */
             player_push_buffer(current_buffer, p1);
@@ -255,5 +282,21 @@ int main(void)
             ui_draw_status(p1.hp, p1.hit_count, score, highscore);
             break;
         }
+
+        powerup_update_from_score(&powerup, score);
+        powerup_tick(&powerup);
+
+        if (level_popup_active(&level))
+            level_popup_tick(&level);
+
+        asteroids_tick(&asteroids, enemy_pool);
+
+        draw_frame(current_buffer, shadow_buffer, &p1, enemy_pool,
+                   enemyBullets, ENEMY_BULLET_POOL_SIZE,
+                   playerBullets, BULLET_POOL_SIZE,
+                   &asteroids, &level, score, highscore);
+
+
+
     }
 }
