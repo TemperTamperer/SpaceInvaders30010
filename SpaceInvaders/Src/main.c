@@ -52,11 +52,13 @@ int main(void)
     buzzer_set_bg(BG_MAIN_THEME, 1);   // loop baggrundsmusik
     buzzer_bg_start();
 
+    //Buffer and shadow mask setup
     uint8_t current_buffer[SCREEN_ROWS][SCREEN_COLS];
     uint8_t shadow_buffer[SCREEN_ROWS][SCREEN_COLS];
     memset(current_buffer, ' ', SCREEN_ROWS * SCREEN_COLS);
     memset(shadow_buffer,  ' ', SCREEN_ROWS * SCREEN_COLS);
 
+    //LCD buffer setup
     uint8_t lcd_buffer[512];
     memset(lcd_buffer,0x00,512);
 
@@ -69,12 +71,12 @@ int main(void)
 
     asteroid ast = {.x = 2, .y = 20, .sx = 9, .sy = 7, .alive = 1, .clean = 1};
 
-    /* Player bullets (din eksisterende pool) */
+    //Player bullets setup
     Bullet* bullets = bullets_get_pool();
     (void)bullets_get_count();
     bullets_init(bullets, BULLET_POOL_SIZE);
 
-    /* Enemy bullets (egen pool) */
+    //Enemy bullets setup
     Bullet enemyBullets[ENEMY_BULLET_POOL_SIZE];
     bullets_init(enemyBullets, ENEMY_BULLET_POOL_SIZE);
 
@@ -151,12 +153,27 @@ int main(void)
                 break;
             }
 
+            //STATE_PLAYING MAIN GAME LOOP:
+            clear_buffer(current_buffer);
+
+            //Game update counters
             enemy_spawn_counter++;
             enemy_move_counter++;
 
-            bonus_spawn_tick(enemy_pool);
+            /* Enemy/asteroid move/spawn */
+            if (enemy_move_counter > 15) {
+            	enemy_move_counter = 0;
+            	enemies_update_pos(enemy_pool);
 
-            clear_buffer(current_buffer);
+                asteroid_enemies_collision(&ast, enemy_pool);
+            }
+
+            if (enemy_spawn_counter > 80) {
+            	enemy_spawn_counter = 0;
+            	enemies_spawn(enemy_pool);
+
+            	asteroid_update_pos(&ast);
+            }
 
             /* Bevægelse: kun retninger (center påvirker ikke movement) */
             uint8_t move_input = input & (JOY_UP | JOY_DOWN | JOY_LEFT | JOY_RIGHT);
@@ -169,56 +186,28 @@ int main(void)
             int startX = (p1.x + (p1.sx / 2));
             int startY = (p1.y - 1);
 
-            if (center_just_pressed) {
-                buzzer_play_sfx(SFX_SHOOT);
-            }
-
             bullets_handle_shoot(bullets, BULLET_POOL_SIZE,
                                  center_just_pressed, startX, startY);
 
-            bullets_powerup_tick();
 
-            asteroid_gravity(bullets, ast);
+            //Player bullet handling
+            //asteroid_gravity(bullets, ast);
             bullets_update(bullets, BULLET_POOL_SIZE);
-            bullets_update(enemyBullets, ENEMY_BULLET_POOL_SIZE);
-
-            /* Enemy move/spawn */
-            if (enemy_move_counter > 15) {
-                enemy_move_counter = 0;
-                enemies_update_pos(enemy_pool);
-            }
-
-            if (enemy_spawn_counter > 80) {
-                enemy_spawn_counter = 0;
-                enemies_spawn(enemy_pool);
-                asteroid_update_pos(&ast);
-            }
-
-            /* Fjender skyder */
-            enemies_shoot(enemy_pool, enemyBullets, ENEMY_BULLET_POOL_SIZE);
-
-            /* Enemy bullets + player hit SFX (detekter HP fald) */
-            uint8_t hp_before = p1.hp;
-
-            bullets_update(enemyBullets, ENEMY_BULLET_POOL_SIZE);
-            player_hit_by_enemy_bullets(enemyBullets, ENEMY_BULLET_POOL_SIZE, &p1);
-
-            if (p1.hp < hp_before) {
-                buzzer_play_sfx(SFX_PLAYER_HIT);
-            }
-
-
-            /* Game over */
-            if (p1.hp == 0) {
-                buzzer_play_sfx(SFX_GAMEOVER);
-                draw_game_over(score, highscore);
-                while (1) { } // stop spillet her (simpelt)
-            }
-
-            /* Hit enemies med player bullets */
             int bonus_collected = 0;
             int kills = bullets_hit_enemies(bullets, BULLET_POOL_SIZE,
                                            enemy_pool, &bonus_collected);
+
+            //Enemy bullet handling
+            enemies_shoot(enemy_pool, enemyBullets, ENEMY_BULLET_POOL_SIZE);
+            bullets_update(enemyBullets, ENEMY_BULLET_POOL_SIZE);
+            if(player_hit_by_enemy_bullets(enemyBullets, ENEMY_BULLET_POOL_SIZE, &p1)){
+            	buzzer_play_sfx(SFX_PLAYER_HIT);;
+            }
+
+
+            if (center_just_pressed) {
+                            buzzer_play_sfx(SFX_SHOOT);
+                        }
 
             if (kills > 0) {
                 buzzer_play_sfx(SFX_ENEMY_DEATH);
@@ -233,11 +222,22 @@ int main(void)
                 bullets_powerup_activate(POWERUP_TICKS);
             }
 
+            /* Game over */
+            if (p1.hp == 0) {
+            	buzzer_play_sfx(SFX_GAMEOVER);
+            	draw_game_over(score, highscore);
+            	while (1) { } // stop spillet her (simpelt)
+            }
+
+            bonus_spawn_tick(enemy_pool);
+
+            bullets_powerup_tick();
+
             /* TEST: bonus efter 20 kills */
             if (bullets_test_should_powerup(20))
                 bullets_powerup_activate(POWERUP_TICKS);
 
-            asteroid_enemies_collision(&ast, enemy_pool);
+
 
             /* Draw */
             player_push_buffer(current_buffer, p1);

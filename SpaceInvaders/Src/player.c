@@ -17,8 +17,7 @@ void player_update_pos(uint8_t input, player *p1)
     }
 }
 
-void player_push_buffer(uint8_t buffer[][SCREEN_COLS], player p)
-{
+void player_push_buffer(uint8_t buffer[][SCREEN_COLS], player p){
     /* Player sprite:
          ^
         / \
@@ -38,8 +37,9 @@ void player_push_buffer(uint8_t buffer[][SCREEN_COLS], player p)
             buffer[p.y - i][p.x + j] = player_sprite[p.sy - i - 1][j];
         }
     }
-} // ✅ VIGTIG: lukker player_push_buffer korrekt her
-void player_hit_by_enemy_bullets(Bullet *enemyBullets,
+}
+
+uint8_t player_hit_by_enemy_bullets(Bullet *enemyBullets,
                                  int count,
                                  player *p)
 {
@@ -70,9 +70,10 @@ void player_hit_by_enemy_bullets(Bullet *enemyBullets,
                     p->hp--;
             }
 
-            return;
+            return 1;
         }
     }
+    return 0;
 }
 	/*
 	//Following is the charecters pushed to the buffer at their respective x,y coordinates
