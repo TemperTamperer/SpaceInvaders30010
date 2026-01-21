@@ -260,7 +260,7 @@ int main(void)
             break;
         }
 
-
+        /*
         if (enemy_spawn_counter > level_spawn_limit(&level))
         {
             enemy_spawn_counter = 0;
@@ -321,5 +321,6 @@ int main(void)
 
         draw_buffer(current_buffer, shadow_buffer);
         ui_draw_status(p1.hp, p1.hit_count, score, highscore);
+        */
     }
 }
