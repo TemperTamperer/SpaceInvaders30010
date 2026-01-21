@@ -1,7 +1,20 @@
 #include "player.h"
 #include "joystick.h"
 #include "bullet.h"
-
+void player_get_shoot_pos(const player *p, int *x, int *y)
+{
+    *x = p->x + (p->sx / 2);
+    *y = p->y - 1;
+}
+void player_init(player *p)
+{
+    p->x = 50;
+    p->y = SCREEN_ROWS - 1;
+    p->sx = 5;
+    p->sy = 3;
+    p->hp = 3;
+    p->hit_count = 0;
+}
 void player_update_pos(uint8_t input, player *p1)
 {
     if (input & JOY_LEFT)

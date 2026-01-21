@@ -19,6 +19,7 @@ typedef struct Bullet {
 } Bullet;
 
 void bullets_init(Bullet bullets[], int count);
+void bullets_apply_kills_to_score(int kills, uint32_t *score, uint32_t *highscore);
 
 void bullets_shoot_single(Bullet bullets[], int count, int x, int y);
 void bullets_shoot_spread5(Bullet bullets[], int count, int x, int y);

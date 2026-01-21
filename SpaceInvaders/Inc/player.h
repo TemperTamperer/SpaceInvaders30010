@@ -5,14 +5,15 @@
 #include "game_settings.h"
 
 struct Bullet;
-
 typedef struct {
-    uint16_t x, y;
-    uint8_t sx, sy;
+    int x, y;
+    int sx, sy;
     uint8_t hp;
-    uint8_t hit_count;
+    uint16_t hit_count;
 } player;
 
+void player_init(player *p);
+void player_get_shoot_pos(const player *p, int *x, int *y);
 void player_update_pos(uint8_t input, player *p1);
 void player_push_buffer(uint8_t buffer[][SCREEN_COLS], player p1);
 void player_hit_by_enemy_bullets(struct Bullet *enemyBullets,

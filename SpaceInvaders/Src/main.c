@@ -42,9 +42,8 @@ int main(void)
     memset(current_buffer, ' ', SCREEN_ROWS * SCREEN_COLS);
     memset(shadow_buffer,  ' ', SCREEN_ROWS * SCREEN_COLS);
 
-    player p1 = {.x = 50, .y = SCREEN_ROWS - 1, .sx = 5, .sy = 3};
-    p1.hp = 3;
-    p1.hit_count = 0;
+    player p1;
+    player_init(&p1);
 
     enemy enemy_pool[MAX_ENEMIES];
     enemies_init(enemy_pool);
@@ -64,58 +63,50 @@ int main(void)
 
     while (1)
     {
-        if (!timer_flag) continue;
-        timer_flag = 0;
+        timer_wait_for_tick();
 
-        enemy_spawn_counter++;
-        enemy_move_counter++;
+        uint8_t move_input;
+        uint8_t center_just_pressed;
 
-        uint8_t input = read_joystick();
+        joystick_update(&move_input,
+                        &center_just_pressed,
+                        &prev_center_pressed);
 
-        uint8_t move_input = input & (JOY_UP | JOY_DOWN | JOY_LEFT | JOY_RIGHT);
         player_update_pos(move_input, &p1);
 
-        uint8_t center_just_pressed =
-            joystick_just_pressed(input, JOY_CENTER, &prev_center_pressed);
+        int startX, startY;
+        player_get_shoot_pos(&p1, &startX, &startY);
 
-        int startX = (p1.x + (p1.sx / 2));
-        int startY = (p1.y - 1);
+        enemies_tick(enemy_pool,
+                     &enemy_move_counter,
+                     &enemy_spawn_counter,
+                     level_spawn_limit(&level));
 
-        powerup_shoot(&powerup, playerBullets, BULLET_POOL_SIZE, center_just_pressed, startX, startY);
+        powerup_shoot(&powerup,
+                      playerBullets,
+                      BULLET_POOL_SIZE,
+                      center_just_pressed,
+                      startX,
+                      startY);
 
         bullets_update(playerBullets, BULLET_POOL_SIZE);
         bullets_update(enemyBullets, ENEMY_BULLET_POOL_SIZE);
 
-        if (enemy_move_counter > 15)
-        {
-            enemy_move_counter = 0;
-            enemies_update_pos(enemy_pool);
-        }
+        enemies_shoot(enemy_pool,
+                      enemyBullets,
+                      ENEMY_BULLET_POOL_SIZE,
+                      &shootState,
+                      level_get(&level));
 
+        player_hit_by_enemy_bullets(enemyBullets,
+                                    ENEMY_BULLET_POOL_SIZE,
+                                    &p1);
 
-        if (enemy_spawn_counter > level_spawn_limit(&level))
-        {
-            enemy_spawn_counter = 0;
-            enemies_spawn(enemy_pool);
-        }
-
-        enemies_shoot(enemy_pool, enemyBullets, ENEMY_BULLET_POOL_SIZE, &shootState, level_get(&level));
-
-        player_hit_by_enemy_bullets(enemyBullets, ENEMY_BULLET_POOL_SIZE, &p1);
-
-        if (p1.hp == 0)
-        {
-            draw_game_over(score, highscore);
-            while (1) { }
-        }
+        draw_check_game_over(p1.hp, score, highscore);
 
         int kills = bullets_hit_enemies(playerBullets, BULLET_POOL_SIZE, enemy_pool);
+        bullets_apply_kills_to_score(kills, &score, &highscore);
 
-        if (kills > 0)
-        {
-            score += (uint32_t)(kills * 10u);
-            if (score > highscore) highscore = score;
-        }
 
         level_update_from_score(&level, score);
 
@@ -139,20 +130,12 @@ int main(void)
 
         asteroids_tick(&asteroids, enemy_pool);
 
-        clear_buffer(current_buffer);
+        draw_frame(current_buffer, shadow_buffer, &p1, enemy_pool,
+                   enemyBullets, ENEMY_BULLET_POOL_SIZE,
+                   playerBullets, BULLET_POOL_SIZE,
+                   &asteroids, &level, score, highscore);
 
-        player_push_buffer(current_buffer, p1);
-        enemies_push_buffer(current_buffer, enemy_pool);
-        bullets_push_buffer(current_buffer, enemyBullets, ENEMY_BULLET_POOL_SIZE);
-        bullets_push_buffer(current_buffer, playerBullets, BULLET_POOL_SIZE);
-        asteroids_draw(&asteroids, current_buffer);
 
-        if (level_popup_active(&level))
-            draw_level_box(level_get(&level));
-        else if (level_popup_just_ended(&level))
-            draw_level_box_clear();
 
-        draw_buffer(current_buffer, shadow_buffer);
-        ui_draw_status(p1.hp, p1.hit_count, score, highscore);
     }
 }

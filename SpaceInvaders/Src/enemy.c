@@ -15,6 +15,26 @@ void enemies_reset(enemy enemy_pool[], EnemyShootState* st)
     st->shoot_counter = 0;
     st->next_enemy = 0;
 }
+void enemies_tick(enemy pool[],
+                  uint16_t *move_counter,
+                  uint16_t *spawn_counter,
+                  uint8_t spawn_limit)
+{
+    (*move_counter)++;
+    (*spawn_counter)++;
+
+    if (*move_counter > 15)
+    {
+        *move_counter = 0;
+        enemies_update_pos(pool);
+    }
+
+    if (*spawn_counter > spawn_limit)
+    {
+        *spawn_counter = 0;
+        enemies_spawn(pool);
+    }
+}
 
 void enemies_spawn(enemy enemy_pool[])
 {

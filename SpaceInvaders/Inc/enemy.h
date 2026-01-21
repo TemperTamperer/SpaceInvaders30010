@@ -20,6 +20,10 @@ typedef struct
     uint16_t shoot_counter;
     int next_enemy;
 } EnemyShootState;
+void enemies_tick(enemy pool[],
+                  uint16_t *move_counter,
+                  uint16_t *spawn_counter,
+                  uint8_t spawn_limit);
 
 void enemies_init(enemy enemy_pool[]);
 void enemies_reset(enemy enemy_pool[], EnemyShootState* st);

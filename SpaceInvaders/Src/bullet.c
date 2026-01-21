@@ -9,6 +9,13 @@ static Bullet* find_inactive(Bullet bullets[], int count)
     }
     return 0;
 }
+void bullets_apply_kills_to_score(int kills, uint32_t *score, uint32_t *highscore)
+{
+    if (kills <= 0) return;
+
+    *score += (uint32_t)(kills * 10u);
+    if (*score > *highscore) *highscore = *score;
+}
 
 void bullets_init(Bullet bullets[], int count)
 {

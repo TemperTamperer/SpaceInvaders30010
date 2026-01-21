@@ -3,6 +3,14 @@
 volatile time_tracker system_time = {0, 0, 0, 0};
 volatile uint8_t timer_flag;
 
+extern volatile uint8_t timer_flag;
+
+void timer_wait_for_tick(void)
+{
+    while (!timer_flag) { }
+    timer_flag = 0;
+}
+
 void timer15_init(){
 	RCC->APB2ENR |= RCC_APB2Periph_TIM15; // Enable clock line to timer 15;
 	TIM15->CR1 = 0x0000; // Configure timer 15
