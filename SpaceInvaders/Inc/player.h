@@ -19,7 +19,7 @@ void player_update_pos(uint8_t input, player *p1);
 void player_push_buffer(uint8_t buffer[][SCREEN_COLS], player p1);
 void player_condition(player *p);
 
-void player_hit_by_enemy_bullets(struct Bullet *enemyBullets,
+uint8_t player_hit_by_enemy_bullets(struct Bullet *enemyBullets,
                                  int count,
                                  player *p);
 

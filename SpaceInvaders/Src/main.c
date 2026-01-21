@@ -102,7 +102,7 @@ int main(void)
            Jeres tick er 20 Hz => 50 ms pr tick */
         buzzer_update((uint16_t)TICK_MS);
 
-        input = read_joystick();
+        uint8_t input = read_joystick();
 
         /* Hvis state ændres: tegn ny skærm */
         if (state != prev_state)
@@ -202,10 +202,10 @@ int main(void)
 
             //Player bullet handling
             //asteroid_gravity(bullets, ast);
-            bullets_update(bullets, BULLET_POOL_SIZE);
+            bullets_update(playerBullets, BULLET_POOL_SIZE);
             int bonus_collected = 0;
-            int kills = bullets_hit_enemies(bullets, BULLET_POOL_SIZE,
-                                           enemy_pool, &bonus_collected);
+            int kills = bullets_hit_enemies(playerBullets, BULLET_POOL_SIZE,
+                                           enemy_pool);
 
             //Enemy bullet handling
             enemies_shoot(enemy_pool,
@@ -266,12 +266,18 @@ int main(void)
             if (level_popup_active(&level))
             level_popup_tick(&level);
 
+            // Add the '&' symbol to pass the address of 'level'
+            if (level_popup_active((LevelState *)&level))
+                draw_level_box(level_get((LevelState *)&level));
+            else if (level_popup_just_ended((LevelState *)&level))
+                draw_level_box_clear();
+
             /* Draw */
             player_push_buffer(current_buffer, p1);
             enemies_push_buffer(current_buffer, enemy_pool);
 
             bullets_push_buffer(current_buffer, enemyBullets, ENEMY_BULLET_POOL_SIZE);
-            bullets_push_buffer(current_buffer, bullets, BULLET_POOL_SIZE);
+            bullets_push_buffer(current_buffer, playerBullets, BULLET_POOL_SIZE);
             asteroid_push_buffer(current_buffer, ast);
 
             draw_buffer(current_buffer, shadow_buffer);
@@ -282,21 +288,6 @@ int main(void)
             ui_draw_status(p1.hp, p1.hit_count, score, highscore);
             break;
         }
-
-        powerup_update_from_score(&powerup, score);
-        powerup_tick(&powerup);
-
-        if (level_popup_active(&level))
-            level_popup_tick(&level);
-
-        asteroids_tick(&asteroids, enemy_pool);
-
-        draw_frame(current_buffer, shadow_buffer, &p1, enemy_pool,
-                   enemyBullets, ENEMY_BULLET_POOL_SIZE,
-                   playerBullets, BULLET_POOL_SIZE,
-                   &asteroids, &level, score, highscore);
-
-
 
     }
 }

@@ -1,6 +1,6 @@
 #include "level.h"
 
-#define LEVEL2_SCORE 1000u
+#define LEVEL2_SCORE 100u
 #define LEVEL3_SCORE 2000u
 #define LEVEL_POPUP_TICKS 40u
 
