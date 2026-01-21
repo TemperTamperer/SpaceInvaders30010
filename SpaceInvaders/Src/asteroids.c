@@ -40,18 +40,30 @@ void asteroid_update_pos(asteroid *ast){
 	ast->x += ASTEROID_SPEED;
 }
 
-void asteroid_gravity(Bullet bullets[], asteroid ast){
-	for(uint8_t i = 0; i < BULLET_POOL_SIZE; i++){
-		Bullet *b = &bullets[i];
-		if (!b->active) continue;
+void asteroid_gravity(Bullet bullets[], asteroid ast) {
+    int16_t ast_center_x = ast.x + (ast.sx >> 1);
+    int16_t ast_center_y = ast.y + (ast.sy >> 1);
 
-		int16_t bx = b->x >> BULLET_FP_SHIFT;
-		int16_t by = b->y >> BULLET_FP_SHIFT;
+    for (uint8_t i = 0; i < BULLET_POOL_SIZE; i++) {
+        Bullet *b = &bullets[i];
+        if (!b->active) continue;
 
-		int16_t dist = get_approx_dist(by, by, ast.x, ast.y);
-		b->vx += 10 * ((ast.x + (ast.sx >> 1)) - bx) / (dist);
-		b->vy += 10 * ((ast.y + (ast.sy >> 1)) - by) / (dist);
-	}
+        // 1. Get current bullet position
+        int16_t bx = b->x >> BULLET_FP_SHIFT;
+        int16_t by = b->y >> BULLET_FP_SHIFT;
+
+        int16_t dist = get_approx_dist(bx, by, ast_center_x, ast_center_y);
+
+        //Radius where gravity is applied
+        if (dist < 30 && dist > 2) {
+
+            int16_t dx = ast_center_x - bx;
+            int16_t dy = ast_center_y - by;
+
+            b->vx += (10 * dx) / dist;
+            b->vy += (10 * dy) / dist;
+        }
+    }
 }
 
 int32_t get_approx_dist(int32_t x1, int32_t y1, int32_t x2, int32_t y2){
