@@ -10,6 +10,7 @@
 #include "bullet.h"
 #include "level.h"
 #include "powerup.h"
+#include "asteroids.h"
 #include <stdint.h>
 #include <string.h>
 
@@ -55,6 +56,9 @@ int main(void)
 
     EnemyShootState shootState = {0};
 
+    AsteroidSystem asteroids;
+    asteroids_init(&asteroids);
+
     uint8_t prev_center_pressed = 0;
     uint8_t last_level = level_get(&level);
 
@@ -87,6 +91,7 @@ int main(void)
             enemy_move_counter = 0;
             enemies_update_pos(enemy_pool);
         }
+
 
         if (enemy_spawn_counter > level_spawn_limit(&level))
         {
@@ -132,12 +137,15 @@ int main(void)
         if (level_popup_active(&level))
             level_popup_tick(&level);
 
+        asteroids_tick(&asteroids, enemy_pool);
+
         clear_buffer(current_buffer);
 
         player_push_buffer(current_buffer, p1);
         enemies_push_buffer(current_buffer, enemy_pool);
         bullets_push_buffer(current_buffer, enemyBullets, ENEMY_BULLET_POOL_SIZE);
         bullets_push_buffer(current_buffer, playerBullets, BULLET_POOL_SIZE);
+        asteroids_draw(&asteroids, current_buffer);
 
         if (level_popup_active(&level))
             draw_level_box(level_get(&level));
