@@ -33,8 +33,6 @@
 
 game_state state = STATE_MENU;
 
-#define ENEMY_BULLET_POOL_SIZE 16
-
 int main(void)
 {
     uart_init(115200);
@@ -91,6 +89,8 @@ int main(void)
     uint8_t last_level = level_get(&level);
 
     game_state prev_state = -1;
+
+    uint8_t input = 0;
 
     while (1)
     {
@@ -163,7 +163,7 @@ int main(void)
             enemy_spawn_counter++;
             enemy_move_counter++;
 
-            bonus_spawn_tick(enemy_pool);
+            //bonus_spawn_tick(enemy_pool);
 
             clear_buffer(current_buffer);
 
@@ -178,17 +178,15 @@ int main(void)
             int startX = (p1.x + (p1.sx / 2));
             int startY = (p1.y - 1);
 
+            powerup_shoot(&powerup, playerBullets, BULLET_POOL_SIZE, center_just_pressed, startX, startY);
+
             if (center_just_pressed) {
                 buzzer_play_sfx(SFX_SHOOT);
             }
 
-            bullets_handle_shoot(bullets, BULLET_POOL_SIZE,
-                                 center_just_pressed, startX, startY);
 
-            bullets_powerup_tick();
-
-            asteroid_gravity(bullets, ast);
-            bullets_update(bullets, BULLET_POOL_SIZE);
+            //asteroid_gravity(playerBullets, asteroids.ast);
+            bullets_update(playerBullets, BULLET_POOL_SIZE);
             bullets_update(enemyBullets, ENEMY_BULLET_POOL_SIZE);
 
             /* Enemy move/spawn */
@@ -200,11 +198,11 @@ int main(void)
             if (enemy_spawn_counter > 80) {
                 enemy_spawn_counter = 0;
                 enemies_spawn(enemy_pool);
-                asteroid_update_pos(&ast);
+                asteroid_update_pos(&asteroids.ast);
             }
 
             /* Fjender skyder */
-            enemies_shoot(enemy_pool, enemyBullets, ENEMY_BULLET_POOL_SIZE);
+            enemies_shoot(enemy_pool, enemyBullets, ENEMY_BULLET_POOL_SIZE, &shootState, level_get(&level));
 
             /* Enemy bullets + player hit SFX (detekter HP fald) */
             uint8_t hp_before = p1.hp;
@@ -225,9 +223,9 @@ int main(void)
             }
 
             /* Hit enemies med player bullets */
-            int bonus_collected = 0;
-            int kills = bullets_hit_enemies(bullets, BULLET_POOL_SIZE,
-                                           enemy_pool, &bonus_collected);
+            uint32_t bonus_collected = 0;
+            int kills = bullets_hit_enemies(playerBullets, BULLET_POOL_SIZE,
+                                           enemy_pool);
 
             if (kills > 0) {
                 buzzer_play_sfx(SFX_ENEMY_DEATH);
@@ -239,22 +237,19 @@ int main(void)
 
             if (bonus_collected) {
                 buzzer_play_sfx(SFX_BONUS);
-                bullets_powerup_activate(POWERUP_TICKS);
+                //bullets_powerup_activate(POWERUP_TICKS);
             }
 
-            /* TEST: bonus efter 20 kills */
-            if (bullets_test_should_powerup(20))
-                bullets_powerup_activate(POWERUP_TICKS);
 
-            asteroid_enemies_collision(&ast, enemy_pool);
+            asteroid_enemies_collision(&asteroids.ast, enemy_pool);
 
             /* Draw */
             player_push_buffer(current_buffer, p1);
             enemies_push_buffer(current_buffer, enemy_pool);
 
             bullets_push_buffer(current_buffer, enemyBullets, ENEMY_BULLET_POOL_SIZE);
-            bullets_push_buffer(current_buffer, bullets, BULLET_POOL_SIZE);
-            asteroid_push_buffer(current_buffer, ast);
+            bullets_push_buffer(current_buffer, playerBullets, BULLET_POOL_SIZE);
+            asteroid_push_buffer(current_buffer, asteroids.ast);
 
             draw_buffer(current_buffer, shadow_buffer);
 
@@ -318,7 +313,6 @@ int main(void)
         enemies_push_buffer(current_buffer, enemy_pool);
         bullets_push_buffer(current_buffer, enemyBullets, ENEMY_BULLET_POOL_SIZE);
         bullets_push_buffer(current_buffer, playerBullets, BULLET_POOL_SIZE);
-        asteroids_draw(&asteroids, current_buffer);
 
         if (level_popup_active(&level))
             draw_level_box(level_get(&level));
