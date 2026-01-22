@@ -96,7 +96,8 @@ int main(void)
     enemy enemy_pool[MAX_ENEMIES];
     enemies_init(enemy_pool);
 
-    asteroid_init(ast);
+    player p1;
+    asteroid_init(&ast);
 
     //Player and Enemy bullets setup
     Bullet playerBullets[BULLET_POOL_SIZE];
