@@ -88,16 +88,8 @@ uint8_t player_hit_by_enemy_bullets(Bullet *enemyBullets,
     }
     return 0;
 }
-	/*
-	//Following is the charecters pushed to the buffer at their respective x,y coordinates
-	buffer[p1.y - 2][p1.x + 2] = '^';
 
-	buffer[p1.y - 1][p1.x + 1] = '/';
-	buffer[p1.y - 1][p1.x + 4] = '\\';
+void player_enemy_collision(Bullet *enemyBullets,
+                                 player *p){
 
-	buffer[p1.y][p1.x + 0] = '/';
-	buffer[p1.y][p1.x + 1] = '=';
-	buffer[p1.y][p1.x + 2] = '█';
-	buffer[p1.y][p1.x + 3] = '=';
-	buffer[p1.y][p1.x + 4] = '\\';
-	*/
+}

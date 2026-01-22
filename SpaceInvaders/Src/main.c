@@ -42,21 +42,7 @@ int main(void)
     timer15_init();
     lcd_init();
     GPIO_init();
-    printf("\x1B[?25h");
-
-    uint32_t score = 0;
-    uint32_t highscore = 0;
-
-    uint16_t enemy_spawn_counter = 0;
-    uint16_t enemy_move_counter  = 0;
-
-    draw_game_init_screen();
-
-    LevelState level;
-    level_init(&level);
-
-    PowerupState powerup;
-    powerup_init(&powerup);
+    printf("\x1B[?25h"); // go to (1,1) on putty
 
     /* ===== BUZZER INIT + BG MUSIC ===== */
     //buzzer_init();
@@ -72,6 +58,12 @@ int main(void)
     //LCD buffer setup
     uint8_t lcd_buffer[512];
     memset(lcd_buffer,0x00,512);
+
+    uint32_t score = 0;
+    uint32_t highscore = 0;
+
+    uint16_t enemy_spawn_counter = 0;
+    uint16_t enemy_move_counter  = 0;
 
     player p1;
     player_init(&p1);
@@ -89,6 +81,12 @@ int main(void)
 
     EnemyShootState shootState = {0};
 
+    LevelState level;
+    level_init(&level);
+
+    PowerupState powerup;
+    powerup_init(&powerup);
+
     uint8_t prev_center_pressed = 0;
     uint8_t last_level = level_get(&level);
 
@@ -96,7 +94,6 @@ int main(void)
 
     while (1)
     {
-        timer_wait_for_tick();
 
         /* ===== BUZZER TIMING =====
            Jeres tick er 20 Hz => 50 ms pr tick */
@@ -105,21 +102,25 @@ int main(void)
         uint8_t input = read_joystick();
 
         /* Hvis state ændres: tegn ny skærm */
-        if (state != prev_state)
-        {
+        if (state != prev_state) {
             clrscr();
 
-            if (state == STATE_BOSSKEY) {
-                boss_draw();
-            }
-            else if (state == STATE_MENU) {
-                menu_draw();
-            }
-            else if (state == STATE_HELP) {
-                help_draw();
-            }
-            else if (state == STATE_PLAYING) {
-                draw_border();
+            switch (state) {
+                case STATE_BOSSKEY:
+                    boss_draw();
+                    break;
+                case STATE_MENU:
+                    menu_draw();
+                    break;
+                case STATE_HELP:
+                    help_draw();
+                    break;
+                case STATE_PLAYING:
+                    draw_border();
+                    break;
+                default:
+                    // Optional: handle unexpected states
+                    break;
             }
             prev_state = state;
         }
@@ -129,12 +130,10 @@ int main(void)
         case STATE_MENU:
             if (menu_update(input) == 1) {
                 clrscr();
-                draw_border();
                 state = STATE_PLAYING;
             }
             if (menu_update(input) == 2) {
                 clrscr();
-                draw_border();
                 state = STATE_HELP;
             }
             break;
@@ -142,7 +141,6 @@ int main(void)
         case STATE_HELP:
             if (menu_update(input) == 1) {
                 clrscr();
-                draw_border();
                 state = STATE_PLAYING;
             }
             break;
@@ -160,6 +158,8 @@ int main(void)
             }
 
             //STATE_PLAYING MAIN GAME LOOP:
+            timer_wait_for_tick();
+
             clear_buffer(current_buffer);
 
             //Game update counters
@@ -201,7 +201,7 @@ int main(void)
 
 
             //Player bullet handling
-            //asteroid_gravity(bullets, ast);
+            asteroid_gravity(playerBullets, ast);
             bullets_update(playerBullets, BULLET_POOL_SIZE);
             int bonus_collected = 0;
             int kills = bullets_hit_enemies(playerBullets, BULLET_POOL_SIZE,
@@ -214,6 +214,8 @@ int main(void)
                       &shootState,
                       level_get(&level));
             bullets_update(enemyBullets, ENEMY_BULLET_POOL_SIZE);
+
+
             if(player_hit_by_enemy_bullets(enemyBullets, ENEMY_BULLET_POOL_SIZE, &p1)){
             	buzzer_play_sfx(SFX_PLAYER_HIT);;
             }
@@ -231,19 +233,16 @@ int main(void)
                     highscore = score;
             }
 
-            /*
-            if (bonus_collected) {
-                buzzer_play_sfx(SFX_BONUS);
-                bullets_powerup_activate(POWERUP_TICKS);
-            }
-            */
-
             /* Game over */
             if (p1.hp == 0) {
             	buzzer_play_sfx(SFX_GAMEOVER);
             	draw_game_over(score, highscore);
             	while (1) { } // stop spillet her (simpelt)
             }
+
+            //Power up handling
+            powerup_update_from_score(&powerup, score);
+            powerup_tick(&powerup);
 
             //Level handling
             level_update_from_score(&level, score);      
@@ -259,14 +258,10 @@ int main(void)
                 enemy_spawn_counter = 0;
                 enemy_move_counter = 0;
             }
-
-            powerup_update_from_score(&powerup, score);
-            powerup_tick(&powerup);
             
             if (level_popup_active(&level))
             level_popup_tick(&level);
 
-            // Add the '&' symbol to pass the address of 'level'
             if (level_popup_active((LevelState *)&level))
                 draw_level_box(level_get((LevelState *)&level));
             else if (level_popup_just_ended((LevelState *)&level))

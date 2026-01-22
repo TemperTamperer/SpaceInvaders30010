@@ -55,13 +55,13 @@ void asteroid_gravity(Bullet bullets[], asteroid ast) {
         int16_t dist = get_approx_dist(bx, by, ast_center_x, ast_center_y);
 
         //Radius where gravity is applied
-        if (dist < 30 && dist > 2) {
+        if (dist < 20 && dist > 2) {
 
             int16_t dx = ast_center_x - bx;
             int16_t dy = ast_center_y - by;
 
-            b->vx += (10 * dx) / dist;
-            b->vy += (10 * dy) / dist;
+            b->vx += (20 * dx) / dist;
+            b->vy += (30 * dy) / dist;
         }
     }
 }
