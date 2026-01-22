@@ -3,24 +3,15 @@
 #include <string.h>
 #include "player.h"
 
-#define MOVE_TICK_LIMIT 15
-
-#define SPAWN_AMOUNT 6
-#define SPAWN_STEP   10
-#define SPAWN_START_X 2
-
-#define ENEMY_W 5
-#define ENEMY_H 3
-
-#define ENEMY_SPAWN_Y 4
-#define ENEMY_SHOOT_X_OFFSET 2
-#define ENEMY_SHOOT_Y_OFFSET 1
-
+/* Enemy pool init
+   Clears the whole pool so every enemy starts dead/zeroed */
 void enemies_init(enemy enemy_pool[])
 {
     memset(enemy_pool, 0, sizeof(enemy) * MAX_ENEMIES);
 }
 
+/* Reset between levels / restarts
+   Kills all enemies and resets the shooting state */
 void enemies_reset(enemy enemy_pool[], EnemyShootState* st)
 {
     for (int i = 0; i < MAX_ENEMIES; i++)
@@ -30,7 +21,10 @@ void enemies_reset(enemy enemy_pool[], EnemyShootState* st)
     st->next_enemy = 0;
 }
 
-/* Tick: move + spawn */
+/* Tick handler
+   - Counts up move/spawn timers
+   - Moves enemies every N ticks
+   - Spawns enemies when spawn_counter hits spawn_limit */
 void enemies_tick(enemy pool[],
                   uint16_t *move_counter,
                   uint16_t *spawn_counter,
@@ -40,7 +34,7 @@ void enemies_tick(enemy pool[],
     (*move_counter)++;
     (*spawn_counter)++;
 
-    if (*move_counter > MOVE_TICK_LIMIT)
+    if (*move_counter > 15)
     {
         *move_counter = 0;
         enemies_update_pos(pool, p);
@@ -53,10 +47,14 @@ void enemies_tick(enemy pool[],
     }
 }
 
-/* Spawn a row of enemies */
+/* Spawn formation
+   Spawns up to 6 enemies, spaced out horizontally */
 void enemies_spawn(enemy enemy_pool[])
 {
-    int spawn_x = SPAWN_START_X;
+    const int SPAWN_AMOUNT = 6;
+    const int SPAWN_STEP   = 10;
+
+    int spawn_x = 2;
 
     for (int n = 0; n < SPAWN_AMOUNT; n++)
     {
@@ -67,24 +65,26 @@ void enemies_spawn(enemy enemy_pool[])
                 enemy_pool[i].alive = 1;
                 enemy_pool[i].hp = 1;
 
-                enemy_pool[i].sx = ENEMY_W;
-                enemy_pool[i].sy = ENEMY_H;
+                enemy_pool[i].sx = 5;
+                enemy_pool[i].sy = 3;
 
                 enemy_pool[i].has_bonus = 0;
 
                 enemy_pool[i].x = spawn_x;
-                enemy_pool[i].y = ENEMY_SPAWN_Y;
+                enemy_pool[i].y = 4;
                 break;
             }
         }
 
         spawn_x += SPAWN_STEP;
-        if (spawn_x > (SCREEN_COLS - (ENEMY_W + 1)))
+        if (spawn_x > (SCREEN_COLS - 6))
             break;
     }
 }
 
-/* Move enemies down */
+/* Movement + despawn / collision line
+   Moves enemies down by 1 each time this runs.
+   If they cross the collision line, they get removed (and you count a hit). */
 void enemies_update_pos(enemy enemy_pool[], player *p)
 {
     for (int e = 0; e < MAX_ENEMIES; e++)
@@ -95,7 +95,8 @@ void enemies_update_pos(enemy enemy_pool[], player *p)
         enemy_pool[e].y += 1;
 
 #ifdef PLAYER_COLLISION_LINE
-        if (enemy_pool[e].y >= PLAYER_COLLISION_LINE) {
+        if (enemy_pool[e].y >= PLAYER_COLLISION_LINE)
+        {
             enemy_pool[e].alive = 0;
             p->hit_count++;
         }
@@ -106,10 +107,11 @@ void enemies_update_pos(enemy enemy_pool[], player *p)
     }
 }
 
-/* Draw enemies into buffer */
+/* Rendering
+   Copies the 3x5 alien sprite into the screen buffer */
 void enemies_push_buffer(uint8_t buffer[SCREEN_ROWS][SCREEN_COLS], enemy enemy_pool[])
 {
-    static const uint8_t alien_lasher[3][5] = {
+    uint8_t alien_lasher[3][5] = {
         {'(','X','X','X',')'},
         {')',' ','X',' ','('},
         {'(','X','V','X',')'},
@@ -120,27 +122,29 @@ void enemies_push_buffer(uint8_t buffer[SCREEN_ROWS][SCREEN_COLS], enemy enemy_p
         if (!enemy_pool[e].alive)
             continue;
 
-        for (int i = 0; i < ENEMY_H; i++)
+        for (int i = 0; i < 3; i++)
         {
             int by = (int)enemy_pool[e].y - i;
             if (by < 0 || by >= SCREEN_ROWS)
                 continue;
 
-            for (int j = 0; j < ENEMY_W; j++)
+            for (int j = 0; j < 5; j++)
             {
                 int bx = (int)enemy_pool[e].x + j;
                 if (bx < 0 || bx >= SCREEN_COLS)
                     continue;
 
                 uint8_t ch = alien_lasher[i][j];
-                if (ch != ' ')
+                if (ch != 32)
                     buffer[by][bx] = ch;
             }
         }
     }
 }
 
-/* Enemy shooting */
+/* Enemy shooting
+   Interval depends on level. Uses next_enemy as a round-robin pointer
+   so the same enemy doesn’t always shoot. */
 void enemies_shoot(enemy enemy_pool[],
                    Bullet* enemyBullets,
                    int enemyBullets_n,
@@ -176,8 +180,8 @@ void enemies_shoot(enemy enemy_pool[],
             if (enemy_pool[i].alive)
             {
                 bullets_shoot_enemy(enemyBullets, enemyBullets_n,
-                                    (int)enemy_pool[i].x + ENEMY_SHOOT_X_OFFSET,
-                                    (int)enemy_pool[i].y + ENEMY_SHOOT_Y_OFFSET);
+                                    (int)enemy_pool[i].x + 2,
+                                    (int)enemy_pool[i].y + 1);
 
                 st->next_enemy = (i + 1) % MAX_ENEMIES;
                 break;
