@@ -56,6 +56,20 @@ void GPIO_init(void)
 
     GPIOB->MODER &= ~(0x00000003 << (4 * 2));
     GPIOB->MODER |=  (0x00000001 << (4 * 2));
+
+	//LED
+
+	//Set PA9 (red) to read
+	GPIOA->MODER &= ~(0x00000003 << (9 * 2)); // Clear mode register
+	GPIOA->MODER |= (0x00000001 << (9 * 2)); // Set mode register (0x00 –Input, 0x01 - Output, 0x02 - Alternate Function, 0x03 - Analog in/out)
+
+	//Set PC7 (green) to read
+	GPIOC->MODER &= ~(0x00000003 << (7 * 2));
+	GPIOC->MODER |= (0x00000001 << (7 * 2));
+
+	//Set PB4 (blue) to read
+	GPIOB->MODER &= ~(0x00000003 << (4 * 2));
+	GPIOB->MODER |= (0x00000001 << (4 * 2));
 }
 
 uint8_t read_joystick(void)
@@ -66,19 +80,4 @@ uint8_t read_joystick(void)
     if (GPIOC->IDR & (1 << 0)) return JOY_RIGHT;
     if (GPIOB->IDR & (1 << 5)) return JOY_CENTER;
     return 0;
-}
-
-void set_led(uint8_t input)
-{
-    if (input == 0)
-    {
-        GPIOA->ODR |= (1 << 9);
-        GPIOC->ODR |= (1 << 7);
-        GPIOB->ODR |= (1 << 4);
-        return;
-    }
-
-    if (input == JOY_UP)    GPIOA->ODR &= ~(1 << 9);
-    if (input == JOY_DOWN)  GPIOC->ODR &= ~(1 << 7);
-    if (input == JOY_LEFT)  GPIOB->ODR &= ~(1 << 4);
 }

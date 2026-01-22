@@ -75,3 +75,23 @@ void lcd_draw_score(int32_t score, uint8_t buffer[]) {
     }
     lcd_push_buffer(buffer);
 }
+
+void set_led(uint8_t input){
+	if(input == 0){
+		//reset pins to 0
+		GPIOA->ODR &= ~(0x00000001 << (9));
+		GPIOC->ODR &= ~(0x00000001 << (7));
+		GPIOB->ODR &= ~(0x00000001 << (4));
+
+		//Set to 1 to turn off LED
+		GPIOA->ODR |= (0x00000001 << (9));
+		GPIOC->ODR |= (0x00000001 << (7));
+		GPIOB->ODR |= (0x00000001 << (4));
+	}
+
+    if (input == 0b00000001) GPIOA->ODR &= ~(0x00000001 << (9));; // Up joy = set PA9 (blue) = 0 ON
+    if (input == 0b00000010) GPIOC->ODR &= ~(0x00000001 << (7)); // Up joy = set PC7 (green) = 0 ON
+    if (input == 0b00000100) GPIOB->ODR &= ~(0x00000001 << (4)); // Up joy = set PB4 (red) = 0 ON
+
+}
+

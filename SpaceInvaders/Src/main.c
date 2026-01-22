@@ -172,6 +172,7 @@ int main(void)
             	enemies_update_pos(enemy_pool);
 
                 asteroid_enemies_collision(&ast, enemy_pool);
+                set_led(0); //Turns LED off
             }
 
             if (enemy_spawn_counter > 80) {
@@ -217,6 +218,7 @@ int main(void)
 
 
             if(player_hit_by_enemy_bullets(enemyBullets, ENEMY_BULLET_POOL_SIZE, &p1)){
+            	set_led(0b00000100); //Sets LED to red color
             	buzzer_play_sfx(SFX_PLAYER_HIT);;
             }
 
@@ -266,6 +268,7 @@ int main(void)
                 draw_level_box(level_get((LevelState *)&level));
             else if (level_popup_just_ended((LevelState *)&level))
                 draw_level_box_clear();
+
 
             /* Draw */
             player_push_buffer(current_buffer, p1);
