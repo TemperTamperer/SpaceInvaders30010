@@ -1,11 +1,19 @@
 #include "player.h"
-#include "joystick.h"
-#include "bullet.h"
-void player_get_shoot_pos(const player *p, int *x, int *y)
-{
-    *x = p->x + (p->sx / 2);
-    *y = p->y - 1;
-}
+#include "powerup.h"   // Fixes PU_TRIPLE_POS error
+#include "bullet.h"    // Fixes unknown type name 'Bullet'
+
+/* Player sprite:
+         ^
+        / \
+       /═█═\
+    */
+
+    uint8_t player_sprite[3][5] = {
+        {' ', ' ', '^', ' ', ' '},
+        {' ', '/', ' ', '\\', ' '},
+        {'/', 205, 219, 205, '\\'}
+    };
+
 void player_init(player *p)
 {
     p->x = 50;
@@ -30,18 +38,7 @@ void player_update_pos(uint8_t input, player *p1)
     }
 }
 
-void player_push_buffer(uint8_t buffer[][SCREEN_COLS], player p){
-    /* Player sprite:
-         ^
-        / \
-       /═█═\
-    */
-
-    uint8_t player_sprite[3][5] = {
-        {' ', ' ', '^', ' ', ' '},
-        {' ', '/', ' ', '\\', ' '},
-        {'/', 205, 219, 205, '\\'}
-    };
+void player_push_buffer(uint8_t buffer[][SCREEN_COLS], player p, PowerupState *s){
 
     for (int i = 0; i < 3; i++)
     {
@@ -50,6 +47,28 @@ void player_push_buffer(uint8_t buffer[][SCREEN_COLS], player p){
             buffer[p.y - i][p.x + j] = player_sprite[p.sy - i - 1][j];
         }
     }
+
+    if(s->active == PU_TRIPLE_POS){
+    	triple_player_push_buffer(buffer, p);
+    }
+}
+
+void triple_player_push_buffer(uint8_t buffer[][SCREEN_COLS], player p){
+	for (int i = 0; i < 3; i++)
+	    {
+	        for (int j = 0; j < 5; j++)
+	        {
+	            buffer[p.y - i][p.x - 5 + j] = player_sprite[p.sy - i - 1][j];
+	        }
+	    }
+
+	for (int i = 0; i < 3; i++)
+	    {
+	        for (int j = 0; j < 5; j++)
+	        {
+	            buffer[p.y - i][p.x+ 5 + j] = player_sprite[p.sy - i - 1][j];
+	        }
+	    }
 }
 
 uint8_t player_hit_by_enemy_bullets(Bullet *enemyBullets,

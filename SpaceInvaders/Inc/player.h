@@ -3,9 +3,14 @@
 
 #include <stdint.h>
 #include "game_settings.h"
+#include "joystick.h"
 
 struct Bullet;
-typedef struct {
+struct PowerupState; // Forward declaration
+typedef struct PowerupState PowerupState;
+
+struct Bullet;
+typedef struct player{
     int x, y;
     int sx, sy;
     uint8_t hp;
@@ -16,7 +21,8 @@ typedef struct {
 void player_init(player *p);
 void player_get_shoot_pos(const player *p, int *x, int *y);
 void player_update_pos(uint8_t input, player *p1);
-void player_push_buffer(uint8_t buffer[][SCREEN_COLS], player p1);
+void player_push_buffer(uint8_t buffer[][SCREEN_COLS], player p1, PowerupState *s);
+void triple_player_push_buffer(uint8_t buffer[][SCREEN_COLS], player p1);
 void player_condition(player *p);
 
 uint8_t player_hit_by_enemy_bullets(struct Bullet *enemyBullets,

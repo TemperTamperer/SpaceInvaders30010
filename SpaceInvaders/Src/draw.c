@@ -8,6 +8,7 @@
 #include "asteroids.h"
 #include <stdio.h>
 #include <string.h>
+#include "powerup.h"
 
 #define LEVEL_BOX_W 20
 #define LEVEL_BOX_H 3
@@ -37,11 +38,12 @@ void draw_frame(uint8_t current_buffer[SCREEN_ROWS][SCREEN_COLS],
                 Bullet playerBullets[], int playerBulletCount,
                 const AsteroidSystem *asteroids,
                 const LevelState *level,
-                uint32_t score, uint32_t highscore)
+                uint32_t score, uint32_t highscore,
+				PowerupState *s)
 {
     clear_buffer(current_buffer);
 
-    player_push_buffer(current_buffer, *p);
+    player_push_buffer(current_buffer, *p, s);
     enemies_push_buffer(current_buffer, enemy_pool);
     bullets_push_buffer(current_buffer, enemyBullets, enemyBulletCount);
     bullets_push_buffer(current_buffer, playerBullets, playerBulletCount);

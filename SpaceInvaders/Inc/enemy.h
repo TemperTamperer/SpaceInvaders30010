@@ -4,12 +4,13 @@
 
 #include <stdint.h>
 #include "game_settings.h"
-#include "player.h"
-#include "enemy.h"
 
+struct player; // Forward declaration
+typedef struct player player;
+struct Bullet;
 typedef struct Bullet Bullet;
 
-typedef struct
+typedef struct enemy
 {
     uint16_t x, y;
     uint8_t  sx, sy;

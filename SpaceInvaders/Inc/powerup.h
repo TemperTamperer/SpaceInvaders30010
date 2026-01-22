@@ -2,15 +2,17 @@
 #define POWERUP_H_
 
 #include <stdint.h>
-#include "bullet.h"
+#include "game_settings.h"
+#include "bullet.h" // Add this to define what 'Bullet' is
+#include "player.h" // Add this to define what 'player' is
 
-typedef enum {
+typedef enum PowerupType{
     PU_NONE = 0,
     PU_TRIPLE_POS = 1,
     PU_SPREAD_5 = 2
 } PowerupType;
 
-typedef struct {
+typedef struct PowerupState{
     PowerupType active;
     uint16_t ticks_left;
     uint8_t trig_250;
@@ -24,6 +26,7 @@ void powerup_tick(PowerupState* s);
 void powerup_shoot(PowerupState* s,
                    Bullet bullets[], int count,
                    uint8_t shoot_just_pressed,
-                   int x_center, int y);
+				   player p,
+				   uint8_t buffer[][SCREEN_COLS]);
 
 #endif

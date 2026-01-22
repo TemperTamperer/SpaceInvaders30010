@@ -64,8 +64,8 @@ int main(void)
     uart_init(115200);
     timer15_init();
     lcd_init();
-    //GPIO_init(); uncomment if on shiled joystick is to be used
-    GPIO_30010_init();
+    GPIO_init(); // uncomment if on shiled joystick is to be used
+    //GPIO_30010_init();
     printf("\x1B[?h"); // go to (1,1) on putty
     printf("\x1B[?25h"); // remove cursor
 
@@ -125,8 +125,8 @@ int main(void)
            Jeres tick er 20 Hz => 50 ms pr tick */
         buzzer_update((uint16_t)TICK_MS);
 
-        //uint8_t input = read_joystick(); //uncomment if using shield joystick
-        uint8_t input = read_30010_joystick();
+        uint8_t input = read_joystick(); //uncomment if using shield joystick
+        //uint8_t input = read_30010_joystick();
 
         /* Hvis state ændres: tegn ny skærm */
         if (state != prev_state) {
@@ -239,15 +239,13 @@ int main(void)
             uint8_t center_just_pressed =
                 joystick_just_pressed(input, JOY_CENTER, &prev_center_pressed);
 
-            int startX, startY;
-            player_get_shoot_pos(&p1, &startX, &startY);
 
             powerup_shoot(&powerup,
                       playerBullets,
                       BULLET_POOL_SIZE,
                       center_just_pressed,
-                      startX,
-                      startY);
+                      p1,
+					  current_buffer);
 
             asteroid_gravity(playerBullets, ast);
             bullets_update(playerBullets, BULLET_POOL_SIZE);
@@ -317,7 +315,7 @@ int main(void)
 
 
             //draw and buffer functions
-            player_push_buffer(current_buffer, p1);
+            player_push_buffer(current_buffer, p1, &powerup);
             enemies_push_buffer(current_buffer, enemy_pool);
 
             bullets_push_buffer(current_buffer, enemyBullets, ENEMY_BULLET_POOL_SIZE);

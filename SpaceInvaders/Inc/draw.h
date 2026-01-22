@@ -18,7 +18,8 @@ void draw_frame(uint8_t current_buffer[SCREEN_ROWS][SCREEN_COLS],
                 Bullet playerBullets[], int playerBulletCount,
                 const AsteroidSystem *asteroids,
                 const LevelState *level,
-                uint32_t score, uint32_t highscore);
+                uint32_t score, uint32_t highscore,
+				PowerupState *s);
 
 void draw_game_init_screen(void);
 void draw_check_game_over(uint8_t hp, uint32_t score, uint32_t highscore);
