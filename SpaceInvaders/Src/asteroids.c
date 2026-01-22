@@ -1,4 +1,5 @@
 #include "asteroids.h"
+#include "bullet.h"
 
 	/* Asteroid sprite (7x9):
 	     .---.
@@ -37,6 +38,53 @@ void asteroid_push_buffer(uint8_t buffer[][SCREEN_COLS], asteroid ast){
 
 void asteroid_update_pos(asteroid *ast){
 	ast->x += ASTEROID_SPEED;
+}
+
+void asteroid_gravity(Bullet bullets[], asteroid ast) {
+    int16_t ast_center_x = ast.x + (ast.sx >> 1);
+    int16_t ast_center_y = ast.y + (ast.sy >> 1);
+
+    for (uint8_t i = 0; i < BULLET_POOL_SIZE; i++) {
+        Bullet *b = &bullets[i];
+        if (!b->active) continue;
+
+        // 1. Get current bullet position
+        int16_t bx = b->x >> BULLET_FP_SHIFT;
+        int16_t by = b->y >> BULLET_FP_SHIFT;
+
+        int16_t dist = get_approx_dist(bx, by, ast_center_x, ast_center_y);
+
+        //Radius where gravity is applied
+        if (dist < 20 && dist > 2) {
+
+            int16_t dx = ast_center_x - bx;
+            int16_t dy = ast_center_y - by;
+
+            b->vx += (20 * dx) / dist;
+            b->vy += (30 * dy) / dist;
+        }
+    }
+}
+
+int32_t get_approx_dist(int32_t x1, int32_t y1, int32_t x2, int32_t y2){
+    int32_t dx = x1 - x2;
+    int32_t dy = y1 - y2;
+
+    // Absolute values
+    if (dx < 0) dx = -dx;
+    if (dy < 0) dy = -dy;
+
+    int32_t max_v, min_v;
+    if (dx > dy) {
+        max_v = dx;
+        min_v = dy;
+    } else {
+        max_v = dy;
+        min_v = dx;
+    }
+
+    // Makes use of Alpha Max plus Beta Min for dist approximation: Distance = 1.0 * max + 0.375 * min
+    return max_v + (min_v >> 2) + (min_v >> 3);
 }
 
 void asteroid_enemies_collision(asteroid *ast, enemy enemy_pool[MAX_ENEMIES]){

@@ -7,13 +7,14 @@
 #include "timer.h"
 #include "joystick.h"
 #include "game_state.h"
-
+#include "asteroids.h"
+#include "lcd.h"
 #include "buzzer.h"
 #include "buzzer_songs.h"
-
-#include "asteroids.h"
 #include "enemy.h"
 #include "bullet.h"
+#include "level.h"
+#include "powerup.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -27,191 +28,254 @@
 
 game_state state = STATE_MENU;
 
+
+void game_reset(
+    player *p1,
+    enemy enemy_pool[],
+    Bullet playerBullets[],
+    Bullet enemyBullets[],
+    LevelState *level,
+    PowerupState *powerup,
+    asteroid *ast,
+    uint32_t *score,
+    uint16_t *enemy_spawn_counter,
+    uint16_t *enemy_move_counter
+) {
+    *score = 0;
+
+    player_init(p1);
+    enemies_init(enemy_pool);
+
+    bullets_init(playerBullets, BULLET_POOL_SIZE);
+    bullets_init(enemyBullets, ENEMY_BULLET_POOL_SIZE);
+
+    level_init(level);
+    powerup_init(powerup);
+
+    *enemy_spawn_counter = 0;
+    *enemy_move_counter  = 0;
+
+    ast->x = 2;
+    ast->y = 20;
+    ast->sx = 19;
+    ast->sy = 7;
+    ast->alive = 1;
+    ast->clean = 1;
+}
+
+
 int main(void)
 {
     uart_init(115200);
     timer15_init();
+    lcd_init();
     GPIO_init();
-    printf("\x1B[?25h");
-
-    uint16_t enemy_spawn_counter = 0;
-    uint16_t enemy_move_counter  = 0;
-    uint32_t score = 0;
-    uint32_t highscore = 0;
-
-    clrscr();
-    draw_border();
+    printf("\x1B[?h"); // go to (1,1) on putty
     printf("\x1B[?25l");
 
     /* ===== BUZZER INIT + BG MUSIC ===== */
-    buzzer_init();
+    //buzzer_init();
     buzzer_set_bg(BG_MAIN_THEME, 1);   // loop baggrundsmusik
     buzzer_bg_start();
 
+    //Buffer and shadow mask setup
     uint8_t current_buffer[SCREEN_ROWS][SCREEN_COLS];
     uint8_t shadow_buffer[SCREEN_ROWS][SCREEN_COLS];
     memset(current_buffer, ' ', SCREEN_ROWS * SCREEN_COLS);
     memset(shadow_buffer,  ' ', SCREEN_ROWS * SCREEN_COLS);
 
-    player p1 = {.x = 50, .y = SCREEN_ROWS - 1, .sx = 5, .sy = 3};
-    p1.hp = 3;
-    p1.hit_count = 0;
+    //LCD buffer setup
+    uint8_t lcd_buffer[512];
+    memset(lcd_buffer,0x00,512);
+
+    uint32_t score = 0;
+    uint32_t highscore = 0;
+
+    uint16_t enemy_spawn_counter = 0;
+    uint16_t enemy_move_counter  = 0;
+
+    player p1;
+    player_init(&p1);
 
     enemy enemy_pool[MAX_ENEMIES];
-    memset(enemy_pool, 0, sizeof(enemy_pool));
+    enemies_init(enemy_pool);
 
     asteroid ast = {.x = 2, .y = 20, .sx = 9, .sy = 7, .alive = 1, .clean = 1};
 
-    /* Player bullets (din eksisterende pool) */
-    Bullet* bullets = bullets_get_pool();
-    (void)bullets_get_count();
-    bullets_init(bullets, BULLET_POOL_SIZE);
-
-    /* Enemy bullets (egen pool) */
+    //Player and Enemy bullets setup
+    Bullet playerBullets[BULLET_POOL_SIZE];
     Bullet enemyBullets[ENEMY_BULLET_POOL_SIZE];
+    bullets_init(playerBullets, BULLET_POOL_SIZE);
     bullets_init(enemyBullets, ENEMY_BULLET_POOL_SIZE);
 
+    EnemyShootState shootState = {0};
+
+    LevelState level;
+    level_init(&level);
+
+    PowerupState powerup;
+    powerup_init(&powerup);
+
     uint8_t prev_center_pressed = 0;
-    uint8_t input = 0;
+    uint8_t last_level = level_get(&level);
 
     game_state prev_state = -1;
 
     while (1)
     {
-        if (!timer_flag)
-            continue;
-
-        timer_flag = 0;
 
         /* ===== BUZZER TIMING =====
            Jeres tick er 20 Hz => 50 ms pr tick */
         buzzer_update((uint16_t)TICK_MS);
 
-        input = read_joystick();
+        uint8_t input = read_joystick();
 
         /* Hvis state ændres: tegn ny skærm */
-        if (state != prev_state)
-        {
+        if (state != prev_state) {
             clrscr();
 
-            if (state == STATE_BOSSKEY) {
-                boss_draw();
-            }
-            else if (state == STATE_MENU) {
-                menu_draw();
-            }
-            else if (state == STATE_HELP) {
-                help_draw();
-            }
-            else if (state == STATE_PLAYING) {
-                draw_border();
+            switch (state) {
+                case STATE_BOSSKEY:
+                    boss_draw();
+                    break;
+                case STATE_MENU:
+                    menu_draw();
+                    break;
+                case STATE_HELP:
+                    help_draw();
+                    break;
+                case STATE_PLAYING:
+                    draw_border();
+                    break;
+                case STATE_GAME_OVER:
+                	draw_game_over(score, highscore);
+                	printf("\x1B[?h");
+                    break;
+                default:
+                    // Optional: handle unexpected states
+                    break;
             }
             prev_state = state;
         }
 
+        int menu_action = menu_update(input);
+
         switch (state)
         {
         case STATE_MENU:
-            if (menu_update(input) == 1) {
+            if (menu_action == 1) {
                 clrscr();
-                draw_border();
                 state = STATE_PLAYING;
             }
-            if (menu_update(input) == 2) {
+            else if (menu_action == 2) {
                 clrscr();
-                draw_border();
                 state = STATE_HELP;
             }
             break;
 
         case STATE_HELP:
-            if (menu_update(input) == 1) {
+            if (menu_action == 1) {
                 clrscr();
-                draw_border();
                 state = STATE_PLAYING;
             }
             break;
 
         case STATE_BOSSKEY:
-            if (menu_update(input) == 1) {
+            if (menu_action == 1) {
+                state = STATE_PLAYING;
+            }
+            break;
+        case STATE_GAME_OVER:
+            if (menu_action == 1) {
+                game_reset(&p1, enemy_pool,
+                           playerBullets, enemyBullets,
+                           &level, &powerup, &ast,
+                           &score,
+                           &enemy_spawn_counter,
+                           &enemy_move_counter);
+
+                prev_state = -1;   // force redraw
                 state = STATE_PLAYING;
             }
             break;
 
         case STATE_PLAYING:
-            if (menu_update(input) == 3) {
+            if (menu_action == 3) {
+            	printf("\x1B[?25l");
                 state = STATE_BOSSKEY;
                 break;
             }
 
-            enemy_spawn_counter++;
-            enemy_move_counter++;
 
-            bonus_spawn_tick(enemy_pool);
+
+            //MAIN GAME LOOP:
+            timer_wait_for_tick();
 
             clear_buffer(current_buffer);
 
-            /* Bevægelse: kun retninger (center påvirker ikke movement) */
-            uint8_t move_input = input & (JOY_UP | JOY_DOWN | JOY_LEFT | JOY_RIGHT);
-            player_update_pos(move_input, &p1);
+            //enemy counters
+            enemy_spawn_counter++;
+            enemy_move_counter++;
 
-            /* Skyd (player) */
-            uint8_t center_just_pressed =
-                joystick_just_pressed(input, JOY_CENTER, &prev_center_pressed);
-
-            int startX = (p1.x + (p1.sx / 2));
-            int startY = (p1.y - 1);
-
-            if (center_just_pressed) {
-                buzzer_play_sfx(SFX_SHOOT);
-            }
-
-            bullets_handle_shoot(bullets, BULLET_POOL_SIZE,
-                                 center_just_pressed, startX, startY);
-
-            bullets_powerup_tick();
-
-            bullets_update(bullets, BULLET_POOL_SIZE);
-            bullets_update(enemyBullets, ENEMY_BULLET_POOL_SIZE);
-
-            /* Enemy move/spawn */
+            // Enemy/asteroid move and spawn
             if (enemy_move_counter > 15) {
-                enemy_move_counter = 0;
-                enemies_update_pos(enemy_pool);
+            	enemy_move_counter = 0;
+            	enemies_update_pos(enemy_pool);
+
+                asteroid_enemies_collision(&ast, enemy_pool);
+                set_led(0); //Turns LED off
             }
 
             if (enemy_spawn_counter > 80) {
-                enemy_spawn_counter = 0;
-                enemies_spawn(enemy_pool);
+            	enemy_spawn_counter = 0;
+            	enemies_spawn(enemy_pool);
+
+            	asteroid_update_pos(&ast);
             }
 
-            /* Fjender skyder */
-            enemies_shoot(enemy_pool, enemyBullets, ENEMY_BULLET_POOL_SIZE);
+            // Movement
+            uint8_t move_input = input & (JOY_UP | JOY_DOWN | JOY_LEFT | JOY_RIGHT);
+            player_update_pos(move_input, &p1);
 
-            /* Enemy bullets + player hit SFX (detekter HP fald) */
-            uint8_t hp_before = p1.hp;
+            // Player bullet handling
+            uint8_t center_just_pressed =
+                joystick_just_pressed(input, JOY_CENTER, &prev_center_pressed);
 
-            bullets_update(enemyBullets, ENEMY_BULLET_POOL_SIZE);
-            player_hit_by_enemy_bullets(enemyBullets, ENEMY_BULLET_POOL_SIZE, &p1);
+            int startX, startY;
+            player_get_shoot_pos(&p1, &startX, &startY);
 
-            if (p1.hp < hp_before) {
-                buzzer_play_sfx(SFX_PLAYER_HIT);
-            }
+            powerup_shoot(&powerup,
+                      playerBullets,
+                      BULLET_POOL_SIZE,
+                      center_just_pressed,
+                      startX,
+                      startY);
 
-            asteroid_update_pos(&ast);
-
-            /* Game over */
-            if (p1.hp == 0) {
-                buzzer_play_sfx(SFX_GAMEOVER);
-                draw_game_over(score, highscore);
-                while (1) { } // stop spillet her (simpelt)
-            }
-
-            /* Hit enemies med player bullets */
+            asteroid_gravity(playerBullets, ast);
+            bullets_update(playerBullets, BULLET_POOL_SIZE);
             int bonus_collected = 0;
-            int kills = bullets_hit_enemies(bullets, BULLET_POOL_SIZE,
-                                           enemy_pool, &bonus_collected);
+            int kills = bullets_hit_enemies(playerBullets, BULLET_POOL_SIZE,
+                                           enemy_pool);
 
+            //Enemy bullet handling
+            enemies_shoot(enemy_pool,
+                      enemyBullets,
+                      ENEMY_BULLET_POOL_SIZE,
+                      &shootState,
+                      level_get(&level));
+            bullets_update(enemyBullets, ENEMY_BULLET_POOL_SIZE);
+
+
+            if(player_hit_by_enemy_bullets(enemyBullets, ENEMY_BULLET_POOL_SIZE, &p1)){
+            	set_led(0b00000100); //Sets LED to red color
+            	buzzer_play_sfx(SFX_PLAYER_HIT);;
+            }
+
+
+            if (center_just_pressed) {
+                            buzzer_play_sfx(SFX_SHOOT);
+                        }
+            //hit scan
             if (kills > 0) {
                 buzzer_play_sfx(SFX_ENEMY_DEATH);
 
@@ -220,28 +284,56 @@ int main(void)
                     highscore = score;
             }
 
-            if (bonus_collected) {
-                buzzer_play_sfx(SFX_BONUS);
-                bullets_powerup_activate(POWERUP_TICKS);
+
+            if (p1.hp == 0) {
+            	buzzer_play_sfx(SFX_GAMEOVER);
+            	state = STATE_GAME_OVER;
             }
 
-            /* TEST: bonus efter 20 kills */
-            if (bullets_test_should_powerup(20))
-                bullets_powerup_activate(POWERUP_TICKS);
+            //Power up handling
+            powerup_update_from_score(&powerup, score);
+            powerup_tick(&powerup);
 
-            asteroid_enemies_collision(&ast, enemy_pool);
+            //Level handling
+            level_update_from_score(&level, score);      
+            
+            uint8_t now_level = level_get(&level);
+            if (now_level != last_level)
+            {
+               last_level = now_level;
 
-            /* Draw */
+                enemies_reset(enemy_pool, &shootState);
+                bullets_init(enemyBullets, ENEMY_BULLET_POOL_SIZE);
+
+                enemy_spawn_counter = 0;
+                enemy_move_counter = 0;
+            }
+            
+            if (level_popup_active(&level))
+            level_popup_tick(&level);
+
+            if (level_popup_active((LevelState *)&level))
+                draw_level_box(level_get((LevelState *)&level));
+            else if (level_popup_just_ended((LevelState *)&level))
+                draw_level_box_clear();
+
+
+            //draw and buffer functions
             player_push_buffer(current_buffer, p1);
             enemies_push_buffer(current_buffer, enemy_pool);
 
             bullets_push_buffer(current_buffer, enemyBullets, ENEMY_BULLET_POOL_SIZE);
-            bullets_push_buffer(current_buffer, bullets, BULLET_POOL_SIZE);
+            bullets_push_buffer(current_buffer, playerBullets, BULLET_POOL_SIZE);
             asteroid_push_buffer(current_buffer, ast);
 
             draw_buffer(current_buffer, shadow_buffer);
+
+        	lcd_draw_heart(p1.hp, lcd_buffer);
+        	lcd_draw_score(score, lcd_buffer);
+
             ui_draw_status(p1.hp, p1.hit_count, score, highscore);
             break;
         }
+
     }
 }

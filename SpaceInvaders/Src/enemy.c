@@ -1,86 +1,69 @@
 #include "enemy.h"
-#include "game_settings.h"
-#include <string.h>
-#include <stdint.h>
-#include <stdlib.h>   // rand()
 #include "bullet.h"
+#include <string.h>
 
-static uint8_t bonus_exists(enemy enemy_pool[])
+void enemies_init(enemy enemy_pool[])
+{
+    memset(enemy_pool, 0, sizeof(enemy) * MAX_ENEMIES);
+}
+
+void enemies_reset(enemy enemy_pool[], EnemyShootState* st)
 {
     for (int i = 0; i < MAX_ENEMIES; i++)
-    {
-        if (enemy_pool[i].alive && enemy_pool[i].has_bonus)
-            return 1;
-    }
-    return 0;
+        enemy_pool[i].alive = 0;
+
+    st->shoot_counter = 0;
+    st->next_enemy = 0;
 }
-
-/* bonus_ready siger "cooldown færdig, bonus må forsøges" */
-static int bonus_spawn_ticks_left = 10800; // ~3 min ved 60 ticks/s
-static uint8_t bonus_ready = 0;
-
-void bonus_spawn_tick(enemy enemy_pool[])
+void enemies_tick(enemy pool[],
+                  uint16_t *move_counter,
+                  uint16_t *spawn_counter,
+                  uint8_t spawn_limit)
 {
-    // hvis der allerede er en bonus enemy på skærmen, gør ingenting
-    if (bonus_exists(enemy_pool))
-        return;
+    (*move_counter)++;
+    (*spawn_counter)++;
 
-    if (bonus_spawn_ticks_left > 0)
+    if (*move_counter > 15)
     {
-        bonus_spawn_ticks_left--;
-        return;
+        *move_counter = 0;
+        enemies_update_pos(pool);
     }
 
-    // cooldown færdig -> nu må bonus forsøges på kommende spawns
-    bonus_ready = 1;
+    if (*spawn_counter > spawn_limit)
+    {
+        *spawn_counter = 0;
+        enemies_spawn(pool);
+    }
 }
 
-/* =========================
-   SPAWN: spawn en HEL række ad gangen (som din gamle)
-   ========================= */
 void enemies_spawn(enemy enemy_pool[])
 {
-    // justér her hvis du vil have flere/færre pr række
     const int SPAWN_AMOUNT = 6;
     const int SPAWN_STEP   = 10;
 
-    int spawn_x = 2;   // start altid samme sted (stabil række)
+    int spawn_x = 2;
 
     for (int n = 0; n < SPAWN_AMOUNT; n++)
     {
-        // find en ledig plads i poolen
         for (int i = 0; i < MAX_ENEMIES; i++)
         {
             if (!enemy_pool[i].alive)
             {
                 enemy_pool[i].alive = 1;
+                enemy_pool[i].hp = 1;
+
+                enemy_pool[i].sx = 5;
+                enemy_pool[i].sy = 3;
+
                 enemy_pool[i].has_bonus = 0;
 
-                // Spawn position: samme y for hele rækken
                 enemy_pool[i].x = spawn_x;
                 enemy_pool[i].y = 4;
-
-                // bonus er sjælden og kun efter cooldown
-                if (bonus_ready && !bonus_exists(enemy_pool))
-                {
-                    if ((rand() % 20) == 0)
-                    {
-                        enemy_pool[i].has_bonus = 1;
-
-                        // reset: tidligst ny bonus om ~3 min igen
-                        bonus_ready = 0;
-                        bonus_spawn_ticks_left = 10800;
-                    }
-                }
-
-                break; // ud af "find slot" loop
+                break;
             }
         }
 
-        // næste enemy i rækken
         spawn_x += SPAWN_STEP;
-
-        // stop hvis vi ikke har mere plads på linjen
         if (spawn_x > (SCREEN_COLS - 6))
             break;
     }
@@ -93,10 +76,8 @@ void enemies_update_pos(enemy enemy_pool[])
         if (!enemy_pool[e].alive)
             continue;
 
-        // Simpel “falder ned”
         enemy_pool[e].y += 1;
 
-        // Hvis den går for langt ned, fjern den
 #ifdef PLAYER_COLLISION_LINE
         if (enemy_pool[e].y >= PLAYER_COLLISION_LINE)
             enemy_pool[e].alive = 0;
@@ -122,50 +103,65 @@ void enemies_push_buffer(uint8_t buffer[SCREEN_ROWS][SCREEN_COLS], enemy enemy_p
 
         for (int i = 0; i < 3; i++)
         {
-            int by = enemy_pool[e].y - i;
+            int by = (int)enemy_pool[e].y - i;
             if (by < 0 || by >= SCREEN_ROWS)
                 continue;
 
             for (int j = 0; j < 5; j++)
             {
-                int bx = enemy_pool[e].x + j;
+                int bx = (int)enemy_pool[e].x + j;
                 if (bx < 0 || bx >= SCREEN_COLS)
                     continue;
 
                 uint8_t ch = alien_lasher[i][j];
-                if (ch != 32) // 32 = ' '
+                if (ch != 32)
                     buffer[by][bx] = ch;
             }
         }
     }
 }
 
-/* =========================
-   Fjender skyder
-   ========================= */
-void enemies_shoot(enemy enemy_pool[], Bullet enemyBullets[], int bullet_count)
+void enemies_shoot(enemy enemy_pool[],
+                   Bullet* enemyBullets,
+                   int enemyBullets_n,
+                   EnemyShootState* st,
+                   uint8_t level)
 {
-    static uint16_t shoot_counter = 0;
-    static int next_enemy = 0;
+    uint16_t interval = 20;
+    uint8_t shots_per_event = 1;
 
-    shoot_counter++;
-    if (shoot_counter < 20)   // lavere tal = skyder oftere
+    if (level == 2)
+    {
+        interval = 12;
+        shots_per_event = 2;
+    }
+    else if (level == 3)
+    {
+        interval = 8;
+        shots_per_event = 3;
+    }
+
+    st->shoot_counter++;
+    if (st->shoot_counter < interval)
         return;
 
-    shoot_counter = 0;
+    st->shoot_counter = 0;
 
-    for (int k = 0; k < MAX_ENEMIES; k++)
+    for (uint8_t s = 0; s < shots_per_event; s++)
     {
-        int i = (next_enemy + k) % MAX_ENEMIES;
-
-        if (enemy_pool[i].alive)
+        for (int k = 0; k < MAX_ENEMIES; k++)
         {
-            bullets_shoot_enemy(enemyBullets, bullet_count,
-                                (int)enemy_pool[i].x + 2,
-                                (int)enemy_pool[i].y + 1);
+            int i = (st->next_enemy + k) % MAX_ENEMIES;
 
-            next_enemy = (i + 1) % MAX_ENEMIES;
-            break;
+            if (enemy_pool[i].alive)
+            {
+                bullets_shoot_enemy(enemyBullets, enemyBullets_n,
+                                    (int)enemy_pool[i].x + 2,
+                                    (int)enemy_pool[i].y + 1);
+
+                st->next_enemy = (i + 1) % MAX_ENEMIES;
+                break;
+            }
         }
     }
 }

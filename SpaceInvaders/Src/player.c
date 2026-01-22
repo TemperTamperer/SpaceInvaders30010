@@ -1,7 +1,20 @@
 #include "player.h"
 #include "joystick.h"
 #include "bullet.h"
-
+void player_get_shoot_pos(const player *p, int *x, int *y)
+{
+    *x = p->x + (p->sx / 2);
+    *y = p->y - 1;
+}
+void player_init(player *p)
+{
+    p->x = 50;
+    p->y = SCREEN_ROWS - 1;
+    p->sx = 5;
+    p->sy = 3;
+    p->hp = 3;
+    p->hit_count = 0;
+}
 void player_update_pos(uint8_t input, player *p1)
 {
     if (input & JOY_LEFT)
@@ -17,8 +30,7 @@ void player_update_pos(uint8_t input, player *p1)
     }
 }
 
-void player_push_buffer(uint8_t buffer[][SCREEN_COLS], player p)
-{
+void player_push_buffer(uint8_t buffer[][SCREEN_COLS], player p){
     /* Player sprite:
          ^
         / \
@@ -38,8 +50,9 @@ void player_push_buffer(uint8_t buffer[][SCREEN_COLS], player p)
             buffer[p.y - i][p.x + j] = player_sprite[p.sy - i - 1][j];
         }
     }
-} // ✅ VIGTIG: lukker player_push_buffer korrekt her
-void player_hit_by_enemy_bullets(Bullet *enemyBullets,
+}
+
+uint8_t player_hit_by_enemy_bullets(Bullet *enemyBullets,
                                  int count,
                                  player *p)
 {
@@ -70,20 +83,13 @@ void player_hit_by_enemy_bullets(Bullet *enemyBullets,
                     p->hp--;
             }
 
-            return;
+            return 1;
         }
     }
+    return 0;
 }
-	/*
-	//Following is the charecters pushed to the buffer at their respective x,y coordinates
-	buffer[p1.y - 2][p1.x + 2] = '^';
 
-	buffer[p1.y - 1][p1.x + 1] = '/';
-	buffer[p1.y - 1][p1.x + 4] = '\\';
+void player_enemy_collision(Bullet *enemyBullets,
+                                 player *p){
 
-	buffer[p1.y][p1.x + 0] = '/';
-	buffer[p1.y][p1.x + 1] = '=';
-	buffer[p1.y][p1.x + 2] = '█';
-	buffer[p1.y][p1.x + 3] = '=';
-	buffer[p1.y][p1.x + 4] = '\\';
-	*/
+}
