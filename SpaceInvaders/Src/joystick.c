@@ -1,5 +1,6 @@
 #include "joystick.h"
 
+// Input helpers
 uint8_t joystick_just_pressed(uint8_t input, uint8_t mask, uint8_t *prev)
 {
     uint8_t now = (input & mask) ? 1 : 0;
@@ -27,57 +28,59 @@ void joystick_update(uint8_t *move,
     *center_just_pressed = joystick_center_just_pressed(raw, prev_center);
 }
 
+// GPIO setup
+#define GPIO_MODE_BITS   2
+#define GPIO_MODE_MASK   0x00000003
+#define GPIO_INPUT       0x00000000
+#define GPIO_OUTPUT      0x00000001
+#define GPIO_PULLDOWN    0x00000002
+
+#define PIN0  0
+#define PIN4  4
+#define PIN5  5
+#define PIN7  7
+#define PIN9  9
+#define PIN1  1
+
 void GPIO_init(void)
 {
     RCC->AHBENR |= RCC_AHBPeriph_GPIOA;
     RCC->AHBENR |= RCC_AHBPeriph_GPIOB;
     RCC->AHBENR |= RCC_AHBPeriph_GPIOC;
 
-    GPIOA->MODER &= ~(0x00000003 << (0 * 2));
-    GPIOA->MODER |=  (0x00000000 << (0 * 2));
-    GPIOA->PUPDR &= ~(0x00000003 << (0 * 2));
-    GPIOA->PUPDR |=  (0x00000002 << (0 * 2));
+    GPIOA->MODER &= ~(GPIO_MODE_MASK << (PIN0 * GPIO_MODE_BITS));
+    GPIOA->MODER |=  (GPIO_INPUT     << (PIN0 * GPIO_MODE_BITS));
+    GPIOA->PUPDR &= ~(GPIO_MODE_MASK << (PIN0 * GPIO_MODE_BITS));
+    GPIOA->PUPDR |=  (GPIO_PULLDOWN  << (PIN0 * GPIO_MODE_BITS));
 
-    GPIOB->MODER &= ~(0x00000003 << (0 * 2));
-    GPIOB->MODER |=  (0x00000000 << (0 * 2));
-    GPIOB->PUPDR &= ~(0x00000003 << (0 * 2));
-    GPIOB->PUPDR |=  (0x00000002 << (0 * 2));
+    GPIOB->MODER &= ~(GPIO_MODE_MASK << (PIN0 * GPIO_MODE_BITS));
+    GPIOB->MODER |=  (GPIO_INPUT     << (PIN0 * GPIO_MODE_BITS));
+    GPIOB->PUPDR &= ~(GPIO_MODE_MASK << (PIN0 * GPIO_MODE_BITS));
+    GPIOB->PUPDR |=  (GPIO_PULLDOWN  << (PIN0 * GPIO_MODE_BITS));
 
-    GPIOC->MODER &= ~(0x00000003 << (0 * 2));
-    GPIOC->MODER |=  (0x00000000 << (0 * 2));
-    GPIOC->PUPDR &= ~(0x00000003 << (0 * 2));
-    GPIOC->PUPDR |=  (0x00000002 << (0 * 2));
+    GPIOC->MODER &= ~(GPIO_MODE_MASK << (PIN0 * GPIO_MODE_BITS));
+    GPIOC->MODER |=  (GPIO_INPUT     << (PIN0 * GPIO_MODE_BITS));
+    GPIOC->PUPDR &= ~(GPIO_MODE_MASK << (PIN0 * GPIO_MODE_BITS));
+    GPIOC->PUPDR |=  (GPIO_PULLDOWN  << (PIN0 * GPIO_MODE_BITS));
 
-    GPIOA->MODER &= ~(0x00000003 << (9 * 2));
-    GPIOA->MODER |=  (0x00000001 << (9 * 2));
+    // LED outputs
+    GPIOA->MODER &= ~(GPIO_MODE_MASK << (PIN9 * GPIO_MODE_BITS));
+    GPIOA->MODER |=  (GPIO_OUTPUT    << (PIN9 * GPIO_MODE_BITS));
 
-    GPIOC->MODER &= ~(0x00000003 << (7 * 2));
-    GPIOC->MODER |=  (0x00000001 << (7 * 2));
+    GPIOC->MODER &= ~(GPIO_MODE_MASK << (PIN7 * GPIO_MODE_BITS));
+    GPIOC->MODER |=  (GPIO_OUTPUT    << (PIN7 * GPIO_MODE_BITS));
 
-    GPIOB->MODER &= ~(0x00000003 << (4 * 2));
-    GPIOB->MODER |=  (0x00000001 << (4 * 2));
-
-	//LED
-
-	//Set PA9 (red) to read
-	GPIOA->MODER &= ~(0x00000003 << (9 * 2)); // Clear mode register
-	GPIOA->MODER |= (0x00000001 << (9 * 2)); // Set mode register (0x00 –Input, 0x01 - Output, 0x02 - Alternate Function, 0x03 - Analog in/out)
-
-	//Set PC7 (green) to read
-	GPIOC->MODER &= ~(0x00000003 << (7 * 2));
-	GPIOC->MODER |= (0x00000001 << (7 * 2));
-
-	//Set PB4 (blue) to read
-	GPIOB->MODER &= ~(0x00000003 << (4 * 2));
-	GPIOB->MODER |= (0x00000001 << (4 * 2));
+    GPIOB->MODER &= ~(GPIO_MODE_MASK << (PIN4 * GPIO_MODE_BITS));
+    GPIOB->MODER |=  (GPIO_OUTPUT    << (PIN4 * GPIO_MODE_BITS));
 }
 
+// Read joystick (one direction at a time)
 uint8_t read_joystick(void)
 {
-    if (GPIOA->IDR & (1 << 4)) return JOY_UP;
-    if (GPIOB->IDR & (1 << 0)) return JOY_DOWN;
-    if (GPIOC->IDR & (1 << 1)) return JOY_LEFT;
-    if (GPIOC->IDR & (1 << 0)) return JOY_RIGHT;
-    if (GPIOB->IDR & (1 << 5)) return JOY_CENTER;
+    if (GPIOA->IDR & (1 << PIN4)) return JOY_UP;
+    if (GPIOB->IDR & (1 << PIN0)) return JOY_DOWN;
+    if (GPIOC->IDR & (1 << PIN1)) return JOY_LEFT;
+    if (GPIOC->IDR & (1 << PIN0)) return JOY_RIGHT;
+    if (GPIOB->IDR & (1 << PIN5)) return JOY_CENTER;
     return 0;
 }
