@@ -1,20 +1,32 @@
 #include "player.h"
 #include "joystick.h"
 #include "bullet.h"
+
+#define PLAYER_START_X 50
+#define PLAYER_HP_MAX  3
+
+#define HIT_LIMIT      5
+#define HITBOX_PAD_X   3
+#define HITBOX_PAD_TOP 2
+
+// Player spawn/shoot helpers
 void player_get_shoot_pos(const player *p, int *x, int *y)
 {
     *x = p->x + (p->sx / 2);
     *y = p->y - 1;
 }
+
 void player_init(player *p)
 {
-    p->x = 50;
+    p->x = PLAYER_START_X;
     p->y = SCREEN_ROWS - 1;
     p->sx = 5;
     p->sy = 3;
-    p->hp = 3;
+    p->hp = PLAYER_HP_MAX;
     p->hit_count = 0;
 }
+
+// Player movement
 void player_update_pos(uint8_t input, player *p1)
 {
     if (input & JOY_LEFT)
@@ -30,14 +42,10 @@ void player_update_pos(uint8_t input, player *p1)
     }
 }
 
-void player_push_buffer(uint8_t buffer[][SCREEN_COLS], player p){
-    /* Player sprite:
-         ^
-        / \
-       /═█═\
-    */
-
-    uint8_t player_sprite[3][5] = {
+// Draw player
+void player_push_buffer(uint8_t buffer[][SCREEN_COLS], player p)
+{
+    static const uint8_t player_sprite[3][5] = {
         {' ', ' ', '^', ' ', ' '},
         {' ', '/', ' ', '\\', ' '},
         {'/', 205, 219, 205, '\\'}
@@ -52,14 +60,15 @@ void player_push_buffer(uint8_t buffer[][SCREEN_COLS], player p){
     }
 }
 
+// Check if enemy bullets hit the player
 uint8_t player_hit_by_enemy_bullets(Bullet *enemyBullets,
-                                 int count,
-                                 player *p)
+                                    int count,
+                                    player *p)
 {
-    int left   = p->x - 3;
-    int right  = p->x + p->sx + 3;
+    int left   = p->x - HITBOX_PAD_X;
+    int right  = p->x + p->sx + HITBOX_PAD_X;
     int bottom = p->y;
-    int top    = p->y - p->sy - 2;
+    int top    = p->y - p->sy - HITBOX_PAD_TOP;
 
     for (int i = 0; i < count; i++)
     {
@@ -76,7 +85,7 @@ uint8_t player_hit_by_enemy_bullets(Bullet *enemyBullets,
 
             p->hit_count++;
 
-            if (p->hit_count >= 5)
+            if (p->hit_count >= HIT_LIMIT)
             {
                 p->hit_count = 0;
                 if (p->hp > 0)
@@ -87,9 +96,4 @@ uint8_t player_hit_by_enemy_bullets(Bullet *enemyBullets,
         }
     }
     return 0;
-}
-
-void player_enemy_collision(Bullet *enemyBullets,
-                                 player *p){
-
 }
