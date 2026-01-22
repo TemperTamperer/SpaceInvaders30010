@@ -8,16 +8,11 @@
 #include "joystick.h"
 #include "game_state.h"
 #include "asteroids.h"
-#include "game_state.h"
 #include "lcd.h"
-
 #include "buzzer.h"
 #include "buzzer_songs.h"
-
-#include "asteroids.h"
 #include "enemy.h"
 #include "bullet.h"
-
 #include "level.h"
 #include "powerup.h"
 
@@ -34,6 +29,39 @@
 game_state state = STATE_MENU;
 
 
+void game_reset(
+    player *p1,
+    enemy enemy_pool[],
+    Bullet playerBullets[],
+    Bullet enemyBullets[],
+    LevelState *level,
+    PowerupState *powerup,
+    asteroid *ast,
+    uint32_t *score,
+    uint16_t *enemy_spawn_counter,
+    uint16_t *enemy_move_counter
+) {
+    *score = 0;
+
+    player_init(p1);
+    enemies_init(enemy_pool);
+
+    bullets_init(playerBullets, BULLET_POOL_SIZE);
+    bullets_init(enemyBullets, ENEMY_BULLET_POOL_SIZE);
+
+    level_init(level);
+    powerup_init(powerup);
+
+    *enemy_spawn_counter = 0;
+    *enemy_move_counter  = 0;
+
+    ast->x = 2;
+    ast->y = 20;
+    ast->sx = 19;
+    ast->sy = 7;
+    ast->alive = 1;
+    ast->clean = 1;
+}
 
 
 int main(void)
@@ -42,7 +70,8 @@ int main(void)
     timer15_init();
     lcd_init();
     GPIO_init();
-    printf("\x1B[?25h"); // go to (1,1) on putty
+    printf("\x1B[?h"); // go to (1,1) on putty
+    printf("\x1B[?25l");
 
     /* ===== BUZZER INIT + BG MUSIC ===== */
     //buzzer_init();
@@ -118,6 +147,10 @@ int main(void)
                 case STATE_PLAYING:
                     draw_border();
                     break;
+                case STATE_GAME_OVER:
+                	draw_game_over(score, highscore);
+                	printf("\x1B[?h");
+                    break;
                 default:
                     // Optional: handle unexpected states
                     break;
@@ -125,48 +158,66 @@ int main(void)
             prev_state = state;
         }
 
+        int menu_action = menu_update(input);
+
         switch (state)
         {
         case STATE_MENU:
-            if (menu_update(input) == 1) {
+            if (menu_action == 1) {
                 clrscr();
                 state = STATE_PLAYING;
             }
-            if (menu_update(input) == 2) {
+            else if (menu_action == 2) {
                 clrscr();
                 state = STATE_HELP;
             }
             break;
 
         case STATE_HELP:
-            if (menu_update(input) == 1) {
+            if (menu_action == 1) {
                 clrscr();
                 state = STATE_PLAYING;
             }
             break;
 
         case STATE_BOSSKEY:
-            if (menu_update(input) == 1) {
+            if (menu_action == 1) {
+                state = STATE_PLAYING;
+            }
+            break;
+        case STATE_GAME_OVER:
+            if (menu_action == 1) {
+                game_reset(&p1, enemy_pool,
+                           playerBullets, enemyBullets,
+                           &level, &powerup, &ast,
+                           &score,
+                           &enemy_spawn_counter,
+                           &enemy_move_counter);
+
+                prev_state = -1;   // force redraw
                 state = STATE_PLAYING;
             }
             break;
 
         case STATE_PLAYING:
-            if (menu_update(input) == 3) {
+            if (menu_action == 3) {
+            	printf("\x1B[?25l");
                 state = STATE_BOSSKEY;
                 break;
             }
 
-            //STATE_PLAYING MAIN GAME LOOP:
+
+
+            //MAIN GAME LOOP:
             timer_wait_for_tick();
 
             clear_buffer(current_buffer);
 
-            //Game update counters
+            //enemy counters
             enemy_spawn_counter++;
             enemy_move_counter++;
 
-            /* Enemy/asteroid move/spawn */
+            // Enemy/asteroid move and spawn
             if (enemy_move_counter > 15) {
             	enemy_move_counter = 0;
             	enemies_update_pos(enemy_pool);
@@ -182,11 +233,11 @@ int main(void)
             	asteroid_update_pos(&ast);
             }
 
-            /* Bevægelse: kun retninger (center påvirker ikke movement) */
+            // Movement
             uint8_t move_input = input & (JOY_UP | JOY_DOWN | JOY_LEFT | JOY_RIGHT);
             player_update_pos(move_input, &p1);
 
-            /* Skyd (player) */
+            // Player bullet handling
             uint8_t center_just_pressed =
                 joystick_just_pressed(input, JOY_CENTER, &prev_center_pressed);
 
@@ -200,8 +251,6 @@ int main(void)
                       startX,
                       startY);
 
-
-            //Player bullet handling
             asteroid_gravity(playerBullets, ast);
             bullets_update(playerBullets, BULLET_POOL_SIZE);
             int bonus_collected = 0;
@@ -226,7 +275,7 @@ int main(void)
             if (center_just_pressed) {
                             buzzer_play_sfx(SFX_SHOOT);
                         }
-
+            //hit scan
             if (kills > 0) {
                 buzzer_play_sfx(SFX_ENEMY_DEATH);
 
@@ -235,11 +284,10 @@ int main(void)
                     highscore = score;
             }
 
-            /* Game over */
+
             if (p1.hp == 0) {
             	buzzer_play_sfx(SFX_GAMEOVER);
-            	draw_game_over(score, highscore);
-            	while (1) { } // stop spillet her (simpelt)
+            	state = STATE_GAME_OVER;
             }
 
             //Power up handling
@@ -270,7 +318,7 @@ int main(void)
                 draw_level_box_clear();
 
 
-            /* Draw */
+            //draw and buffer functions
             player_push_buffer(current_buffer, p1);
             enemies_push_buffer(current_buffer, enemy_pool);
 
