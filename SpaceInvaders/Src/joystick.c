@@ -151,7 +151,7 @@ uint8_t read_30010_joystick(void) {
 
     // 2. SHOOT BUTTON (Connected to C0)
     // We map C0 to JOY_CENTER
-    if (!(GPIOC->IDR & (1 << 0))) {
+    if ((GPIOC->IDR & (1 << 0))) {
         res |= JOY_CENTER;
     }
 

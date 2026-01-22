@@ -1,6 +1,7 @@
 #include "enemy.h"
 #include "bullet.h"
 #include <string.h>
+#include "player.h"
 
 void enemies_init(enemy enemy_pool[])
 {
@@ -18,7 +19,8 @@ void enemies_reset(enemy enemy_pool[], EnemyShootState* st)
 void enemies_tick(enemy pool[],
                   uint16_t *move_counter,
                   uint16_t *spawn_counter,
-                  uint8_t spawn_limit)
+                  uint8_t spawn_limit,
+				  player *p)
 {
     (*move_counter)++;
     (*spawn_counter)++;
@@ -26,7 +28,7 @@ void enemies_tick(enemy pool[],
     if (*move_counter > 15)
     {
         *move_counter = 0;
-        enemies_update_pos(pool);
+        enemies_update_pos(pool, p);
     }
 
     if (*spawn_counter > spawn_limit)
@@ -69,7 +71,7 @@ void enemies_spawn(enemy enemy_pool[])
     }
 }
 
-void enemies_update_pos(enemy enemy_pool[])
+void enemies_update_pos(enemy enemy_pool[], player *p)
 {
     for (int e = 0; e < MAX_ENEMIES; e++)
     {
@@ -79,8 +81,10 @@ void enemies_update_pos(enemy enemy_pool[])
         enemy_pool[e].y += 1;
 
 #ifdef PLAYER_COLLISION_LINE
-        if (enemy_pool[e].y >= PLAYER_COLLISION_LINE)
-            enemy_pool[e].alive = 0;
+        if (enemy_pool[e].y >= PLAYER_COLLISION_LINE){
+        	enemy_pool[e].alive = 0;
+        	p->hit_count++;
+        }
 #else
         if (enemy_pool[e].y >= (SCREEN_ROWS - 1))
             enemy_pool[e].alive = 0;

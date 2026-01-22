@@ -222,7 +222,7 @@ int main(void)
             // Enemy/asteroid move and spawn
             if (enemy_move_counter > 15) {
             	enemy_move_counter = 0;
-            	enemies_update_pos(enemy_pool);
+            	enemies_update_pos(enemy_pool, &p1);
 
                 asteroid_enemies_collision(&ast, enemy_pool);
                 set_led(0); //Turns LED off
