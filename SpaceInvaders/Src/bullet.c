@@ -1,5 +1,6 @@
 #include "bullet.h"
 
+// Helpers
 static Bullet* find_inactive(Bullet bullets[], int count)
 {
     for (int i = 0; i < count; i++)
@@ -9,14 +10,19 @@ static Bullet* find_inactive(Bullet bullets[], int count)
     }
     return 0;
 }
+
+// Scoring
+#define SCORE_PER_KILL 10u
+
 void bullets_apply_kills_to_score(int kills, uint32_t *score, uint32_t *highscore)
 {
     if (kills <= 0) return;
 
-    *score += (uint32_t)(kills * 10u);
+    *score += (uint32_t)(kills * SCORE_PER_KILL);
     if (*score > *highscore) *highscore = *score;
 }
 
+// Init
 void bullets_init(Bullet bullets[], int count)
 {
     for (int i = 0; i < count; i++)
@@ -29,6 +35,7 @@ void bullets_init(Bullet bullets[], int count)
     }
 }
 
+// Shooting
 void bullets_shoot_single(Bullet bullets[], int count, int x, int y)
 {
     Bullet *b = find_inactive(bullets, count);
@@ -40,7 +47,6 @@ void bullets_shoot_single(Bullet bullets[], int count, int x, int y)
     b->vy = -1 * BULLET_FP;
     b->active = true;
     b->frame = 0;
-
 }
 
 void bullets_shoot_enemy(Bullet bullets[], int count, int x, int y)
@@ -85,6 +91,9 @@ void bullets_shoot_spread5(Bullet bullets[], int count, int x, int y)
     }
 }
 
+// Update
+#define BULLET_FRAME_MASK 3
+
 void bullets_update(Bullet bullets[], int count)
 {
     for (int i = 0; i < count; i++)
@@ -94,8 +103,7 @@ void bullets_update(Bullet bullets[], int count)
 
         b->x += b->vx;
         b->y += b->vy;
-        b->frame = (b->frame + 1) & 3; // cycles 0–3
-
+        b->frame = (b->frame + 1) & BULLET_FRAME_MASK;
 
         int bx = (int)(b->x >> BULLET_FP_SHIFT);
         int by = (int)(b->y >> BULLET_FP_SHIFT);
@@ -104,6 +112,10 @@ void bullets_update(Bullet bullets[], int count)
             b->active = false;
     }
 }
+
+// Enemy hit check
+#define ENEMY_HIT_W 4
+#define ENEMY_HIT_H 2
 
 int bullets_hit_enemies(Bullet bullets[], int count, enemy enemy_pool[])
 {
@@ -125,8 +137,8 @@ int bullets_hit_enemies(Bullet bullets[], int count, enemy enemy_pool[])
             int ey = enemy_pool[ei].y;
 
             int left   = ex;
-            int right  = ex + 4;
-            int top    = ey - 2;
+            int right  = ex + ENEMY_HIT_W;
+            int top    = ey - ENEMY_HIT_H;
             int bottom = ey;
 
             if (bx >= left && bx <= right &&
@@ -143,9 +155,13 @@ int bullets_hit_enemies(Bullet bullets[], int count, enemy enemy_pool[])
     return kills;
 }
 
+// Draw bullets
+#define BULLET_ANIM_FRAMES 4
+
 void bullets_push_buffer(uint8_t buf[SCREEN_ROWS][SCREEN_COLS], Bullet bullets[], int count)
 {
-	char bullet_chars[4] = { '|', 'o', '|', '0' };
+    char bullet_chars[BULLET_ANIM_FRAMES] = { '|', 'o', '|', '0' };
+
     for (int i = 0; i < count; i++)
     {
         Bullet *b = &bullets[i];
@@ -157,7 +173,7 @@ void bullets_push_buffer(uint8_t buf[SCREEN_ROWS][SCREEN_COLS], Bullet bullets[]
         if (bx >= 0 && bx < SCREEN_COLS &&
             by >= 0 && by < SCREEN_ROWS)
         {
-        	buf[by][bx] = bullet_chars[b->frame];
+            buf[by][bx] = bullet_chars[b->frame];
         }
     }
 }
