@@ -2,6 +2,16 @@
 #include "bullet.h"
 #include <string.h>
 
+#define MOVE_TICK_LIMIT 15
+
+#define LEVEL1_INTERVAL 20
+#define LEVEL2_INTERVAL 12
+#define LEVEL3_INTERVAL 8
+
+#define LEVEL1_SHOTS 1
+#define LEVEL2_SHOTS 2
+#define LEVEL3_SHOTS 3
+
 void enemies_init(enemy enemy_pool[])
 {
     memset(enemy_pool, 0, sizeof(enemy) * MAX_ENEMIES);
@@ -15,6 +25,8 @@ void enemies_reset(enemy enemy_pool[], EnemyShootState* st)
     st->shoot_counter = 0;
     st->next_enemy = 0;
 }
+
+// Update enemies (movement + spawning)
 void enemies_tick(enemy pool[],
                   uint16_t *move_counter,
                   uint16_t *spawn_counter,
@@ -23,7 +35,7 @@ void enemies_tick(enemy pool[],
     (*move_counter)++;
     (*spawn_counter)++;
 
-    if (*move_counter > 15)
+    if (*move_counter > MOVE_TICK_LIMIT)
     {
         *move_counter = 0;
         enemies_update_pos(pool);
@@ -88,6 +100,7 @@ void enemies_update_pos(enemy enemy_pool[])
     }
 }
 
+// Draw enemies
 void enemies_push_buffer(uint8_t buffer[SCREEN_ROWS][SCREEN_COLS], enemy enemy_pool[])
 {
     uint8_t alien_lasher[3][5] = {
@@ -114,31 +127,32 @@ void enemies_push_buffer(uint8_t buffer[SCREEN_ROWS][SCREEN_COLS], enemy enemy_p
                     continue;
 
                 uint8_t ch = alien_lasher[i][j];
-                if (ch != 32)
+                if (ch != ' ')
                     buffer[by][bx] = ch;
             }
         }
     }
 }
 
+// Enemy shooting
 void enemies_shoot(enemy enemy_pool[],
                    Bullet* enemyBullets,
                    int enemyBullets_n,
                    EnemyShootState* st,
                    uint8_t level)
 {
-    uint16_t interval = 20;
-    uint8_t shots_per_event = 1;
+    uint16_t interval = LEVEL1_INTERVAL;
+    uint8_t shots_per_event = LEVEL1_SHOTS;
 
     if (level == 2)
     {
-        interval = 12;
-        shots_per_event = 2;
+        interval = LEVEL2_INTERVAL;
+        shots_per_event = LEVEL2_SHOTS;
     }
     else if (level == 3)
     {
-        interval = 8;
-        shots_per_event = 3;
+        interval = LEVEL3_INTERVAL;
+        shots_per_event = LEVEL3_SHOTS;
     }
 
     st->shoot_counter++;
