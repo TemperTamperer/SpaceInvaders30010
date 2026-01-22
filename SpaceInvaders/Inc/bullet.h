@@ -16,7 +16,15 @@ typedef struct Bullet {
     int32_t x, y;
     int32_t vx, vy;
     bool active;
+    uint8_t anim;
+
 } Bullet;
+
+int prev_x;
+int prev_y;
+int prev2_x;
+int prev2_y;
+
 
 void bullets_init(Bullet bullets[], int count);
 void bullets_apply_kills_to_score(int kills, uint32_t *score, uint32_t *highscore);

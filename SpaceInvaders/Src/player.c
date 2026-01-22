@@ -51,6 +51,18 @@ void player_push_buffer(uint8_t buffer[][SCREEN_COLS], player p){
         }
     }
 }
+#include "player.h"
+
+void player_push_buffer_small(uint8_t buffer[][SCREEN_COLS], int x, int y)
+{
+    if (y < 0 || y >= SCREEN_ROWS) return;
+
+    // 3-bred: "<^>"
+    if (x-1 >= 0 && x-1 < SCREEN_COLS) buffer[y][x-1] = '<';
+    if (x   >= 0 && x   < SCREEN_COLS) buffer[y][x]   = '^';
+    if (x+1 >= 0 && x+1 < SCREEN_COLS) buffer[y][x+1] = '>';
+}
+
 
 uint8_t player_hit_by_enemy_bullets(Bullet *enemyBullets,
                                  int count,

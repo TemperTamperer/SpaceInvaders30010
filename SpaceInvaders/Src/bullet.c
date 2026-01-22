@@ -21,11 +21,13 @@ void bullets_init(Bullet bullets[], int count)
 {
     for (int i = 0; i < count; i++)
     {
+    	bullets[i].active = false;
         bullets[i].x = 0;
         bullets[i].y = 0;
         bullets[i].vx = 0;
         bullets[i].vy = 0;
-        bullets[i].active = false;
+        bullets[i].anim = 0;
+
     }
 }
 
@@ -39,6 +41,8 @@ void bullets_shoot_single(Bullet bullets[], int count, int x, int y)
     b->vx = 0;
     b->vy = -1 * BULLET_FP;
     b->active = true;
+    b->anim = 0;
+
 }
 
 void bullets_shoot_enemy(Bullet bullets[], int count, int x, int y)
@@ -51,6 +55,8 @@ void bullets_shoot_enemy(Bullet bullets[], int count, int x, int y)
     b->vx = 0;
     b->vy = +1 * BULLET_FP;
     b->active = true;
+    b->anim = 0;
+
 }
 
 void bullets_shoot_spread5(Bullet bullets[], int count, int x, int y)
@@ -80,6 +86,8 @@ void bullets_shoot_spread5(Bullet bullets[], int count, int x, int y)
         b->vx = vx[i];
         b->vy = vy[i];
         b->active = true;
+        bullets[i].anim = 0;
+
     }
 }
 
@@ -90,8 +98,13 @@ void bullets_update(Bullet bullets[], int count)
         Bullet *b = &bullets[i];
         if (!b->active) continue;
 
+
         b->x += b->vx;
         b->y += b->vy;
+
+        b->anim++;
+
+
 
         int bx = (int)(b->x >> BULLET_FP_SHIFT);
         int by = (int)(b->y >> BULLET_FP_SHIFT);
@@ -152,7 +165,17 @@ void bullets_push_buffer(uint8_t buf[SCREEN_ROWS][SCREEN_COLS], Bullet bullets[]
         if (bx >= 0 && bx < SCREEN_COLS &&
             by >= 0 && by < SCREEN_ROWS)
         {
-            buf[by][bx] = '|';
+            char c;
+            switch ((b->anim >> 2) & 3)
+            {
+                case 0:  c = '.'; break;
+                case 1:  c = 'o'; break;
+                case 2:  c = 'O'; break;
+                default: c = 'o'; break;
+            }
+
+            buf[by][bx] = (uint8_t)c;
         }
     }
 }
+

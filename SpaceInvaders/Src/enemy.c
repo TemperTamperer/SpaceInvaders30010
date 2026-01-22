@@ -15,6 +15,31 @@ void enemies_reset(enemy enemy_pool[], EnemyShootState* st)
     st->shoot_counter = 0;
     st->next_enemy = 0;
 }
+void enemies_hit_player(enemy enemies[], player *p)
+{
+    for (int i = 0; i < MAX_ENEMIES; i++)
+    {
+        enemy *e = &enemies[i];
+        if (!e->alive) continue;
+
+        // Simpel AABB overlap (rammer kun når de overlapper)
+        int hit_player =
+            e->x < (uint16_t)(p->x + p->sx) &&
+            (uint16_t)(e->x + e->sx) > p->x &&
+            e->y < (uint16_t)(p->y + p->sy) &&
+            (uint16_t)(e->y + e->sy) > p->y;
+
+        if (hit_player)
+        {
+            p->hit_count++;
+            if (p->hp > 0) p->hp--;
+
+            e->alive = 0; // 1 hit pr enemy
+        }
+    }
+}
+
+
 void enemies_tick(enemy pool[],
                   uint16_t *move_counter,
                   uint16_t *spawn_counter,
@@ -78,22 +103,23 @@ void enemies_update_pos(enemy enemy_pool[])
 
         enemy_pool[e].y += 1;
 
-#ifdef PLAYER_COLLISION_LINE
+/*#ifdef PLAYER_COLLISION_LINE
         if (enemy_pool[e].y >= PLAYER_COLLISION_LINE)
             enemy_pool[e].alive = 0;
 #else
-        if (enemy_pool[e].y >= (SCREEN_ROWS - 1))
+        if (enemy_pool[e].y >= (p-> + p->sy))
             enemy_pool[e].alive = 0;
-#endif
+#endif*/
     }
 }
 
-void enemies_push_buffer(uint8_t buffer[SCREEN_ROWS][SCREEN_COLS], enemy enemy_pool[])
+void enemies_push_buffer(uint8_t buffer[SCREEN_ROWS][SCREEN_COLS],
+                         enemy enemy_pool[])
 {
     uint8_t alien_lasher[3][5] = {
-        {'(','X','X','X',')'},
-        {')',' ','X',' ','('},
-        {'(','X','V','X',')'},
+        {'(', 'X', 'X', 'X', ')'},
+        {')', ' ', 'X', ' ', '('},
+        {'(', 'X', 'V', 'X', ')'},
     };
 
     for (int e = 0; e < MAX_ENEMIES; e++)
@@ -155,7 +181,8 @@ void enemies_shoot(enemy enemy_pool[],
 
             if (enemy_pool[i].alive)
             {
-                bullets_shoot_enemy(enemyBullets, enemyBullets_n,
+                bullets_shoot_enemy(enemyBullets,
+                                    enemyBullets_n,
                                     (int)enemy_pool[i].x + 2,
                                     (int)enemy_pool[i].y + 1);
 

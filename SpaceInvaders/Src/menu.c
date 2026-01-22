@@ -52,7 +52,7 @@ void boss_draw(void)
 
 uint8_t menu_update(uint8_t input)
 {
-    // FIRE button starts game
+
     if (input & JOY_CENTER)
         return 1;
     else if (input & JOY_UP)
