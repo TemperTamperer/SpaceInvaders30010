@@ -70,7 +70,7 @@ int main(void)
     printf("\x1B[?25h"); // remove cursor
 
     /* ===== BUZZER INIT + BG MUSIC ===== */
-    //buzzer_init();
+    buzzer_init();
     buzzer_set_bg(BG_MAIN_THEME, 1);   // loop baggrundsmusik
     buzzer_bg_start();
 
