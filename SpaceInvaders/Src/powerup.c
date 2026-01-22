@@ -7,12 +7,16 @@
 #define SCORE_TRIPLE_POS 250u
 #define SCORE_SPREAD_5   750u
 
+#define TRIPLE_SHOT_OFFSET 5
+
+// Internal helper
 static void activate(PowerupState* s, PowerupType t)
 {
     s->active = t;
     s->ticks_left = PU_TICKS;
 }
 
+// Init
 void powerup_init(PowerupState* s)
 {
     s->active = PU_NONE;
@@ -21,6 +25,7 @@ void powerup_init(PowerupState* s)
     s->trig_750 = 0;
 }
 
+// Unlock powerups based on score
 void powerup_update_from_score(PowerupState* s, uint32_t score)
 {
     if (!s->trig_250 && score >= SCORE_TRIPLE_POS)
@@ -36,6 +41,7 @@ void powerup_update_from_score(PowerupState* s, uint32_t score)
     }
 }
 
+// Powerup timer
 void powerup_tick(PowerupState* s)
 {
     if (s->ticks_left > 0)
@@ -46,6 +52,7 @@ void powerup_tick(PowerupState* s)
     }
 }
 
+// Shooting behavior
 void powerup_shoot(PowerupState* s,
                    Bullet bullets[], int count,
                    uint8_t shoot_just_pressed,
@@ -56,8 +63,8 @@ void powerup_shoot(PowerupState* s,
     if (s->active == PU_TRIPLE_POS)
     {
         bullets_shoot_single(bullets, count, x_center, y);
-        bullets_shoot_single(bullets, count, x_center - 5, y);
-        bullets_shoot_single(bullets, count, x_center + 5, y);
+        bullets_shoot_single(bullets, count, x_center - TRIPLE_SHOT_OFFSET, y);
+        bullets_shoot_single(bullets, count, x_center + TRIPLE_SHOT_OFFSET, y);
         return;
     }
 
