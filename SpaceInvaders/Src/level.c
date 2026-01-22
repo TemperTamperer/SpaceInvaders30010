@@ -1,9 +1,14 @@
 #include "level.h"
 
-#define LEVEL2_SCORE 100u
+#define LEVEL2_SCORE 1000u
 #define LEVEL3_SCORE 2000u
 #define LEVEL_POPUP_TICKS 40u
 
+#define LEVEL1_SPAWN_LIMIT 80u
+#define LEVEL2_SPAWN_LIMIT 60u
+#define LEVEL3_SPAWN_LIMIT 45u
+
+// Init
 void level_init(LevelState* s)
 {
     s->level = 1;
@@ -12,6 +17,7 @@ void level_init(LevelState* s)
     s->popup_ended_pulse = 0;
 }
 
+// Update level based on score
 void level_update_from_score(LevelState* s, uint32_t score)
 {
     uint8_t new_level;
@@ -29,18 +35,21 @@ void level_update_from_score(LevelState* s, uint32_t score)
     }
 }
 
+// Get current level
 uint8_t level_get(const LevelState* s)
 {
     return s->level;
 }
 
+// Spawn pacing per level
 uint16_t level_spawn_limit(const LevelState* s)
 {
-    if (s->level == 3) return 45;
-    if (s->level == 2) return 60;
-    return 80;
+    if (s->level == 3) return LEVEL3_SPAWN_LIMIT;
+    if (s->level == 2) return LEVEL2_SPAWN_LIMIT;
+    return LEVEL1_SPAWN_LIMIT;
 }
 
+// Popup state
 uint8_t level_popup_active(const LevelState* s)
 {
     return (s->popup_ticks > 0) ? 1u : 0u;
