@@ -39,6 +39,8 @@ void bullets_shoot_single(Bullet bullets[], int count, int x, int y)
     b->vx = 0;
     b->vy = -1 * BULLET_FP;
     b->active = true;
+    b->frame = 0;
+
 }
 
 void bullets_shoot_enemy(Bullet bullets[], int count, int x, int y)
@@ -92,6 +94,8 @@ void bullets_update(Bullet bullets[], int count)
 
         b->x += b->vx;
         b->y += b->vy;
+        b->frame = (b->frame + 1) & 3; // cycles 0–3
+
 
         int bx = (int)(b->x >> BULLET_FP_SHIFT);
         int by = (int)(b->y >> BULLET_FP_SHIFT);
@@ -141,6 +145,7 @@ int bullets_hit_enemies(Bullet bullets[], int count, enemy enemy_pool[])
 
 void bullets_push_buffer(uint8_t buf[SCREEN_ROWS][SCREEN_COLS], Bullet bullets[], int count)
 {
+	char bullet_chars[4] = { '|', 'o', '|', '0' };
     for (int i = 0; i < count; i++)
     {
         Bullet *b = &bullets[i];
@@ -152,7 +157,7 @@ void bullets_push_buffer(uint8_t buf[SCREEN_ROWS][SCREEN_COLS], Bullet bullets[]
         if (bx >= 0 && bx < SCREEN_COLS &&
             by >= 0 && by < SCREEN_ROWS)
         {
-            buf[by][bx] = '|';
+        	buf[by][bx] = bullet_chars[b->frame];
         }
     }
 }
