@@ -18,13 +18,28 @@ uint8_t joystick_center_just_pressed(uint8_t raw, uint8_t *prev)
     return joystick_just_pressed(raw, JOY_CENTER, prev);
 }
 
-void joystick_update(uint8_t *move,
-                     uint8_t *center_just_pressed,
-                     uint8_t *prev_center)
-{
-    uint8_t raw = read_joystick();
-    *move = joystick_get_move(raw);
-    *center_just_pressed = joystick_center_just_pressed(raw, prev_center);
+uint16_t adc_read(uint8_t channel) {
+    // 1. Reset the sequence length and the first channel selection
+    // Bits 12:0 of SQR1 control the sequence.
+    // Clearing 0x00000FFF sets length to 1 and clears the first channel slot.
+    ADC1->SQR1 &= ~0x00000FFF;
+
+    // 2. Map the channel to the first slot (Bits 10:6)
+    ADC1->SQR1 |= (channel << 6);
+
+    // 3. Start the conversion
+    ADC1->CR |= (1 << 2); // ADSTART
+
+    // 4. Wait for End of Conversion (EOC)
+    while(!(ADC1->ISR & (1 << 2)));
+
+    // 5. Read the result
+    uint16_t result = (uint16_t)ADC1->DR;
+
+    // 6. Clear the EOC flag (Write 1 to clear)
+    ADC1->ISR |= (1 << 2);
+
+    return result;
 }
 
 void GPIO_init(void)
@@ -72,6 +87,49 @@ void GPIO_init(void)
 	GPIOB->MODER |= (0x00000001 << (4 * 2));
 }
 
+void GPIO_30010_init(void) {
+    // 1. Enable Clocks for Ports A, B, C and ADC
+    RCC->AHBENR |= (RCC_AHBPeriph_GPIOA | RCC_AHBPeriph_GPIOB | RCC_AHBPeriph_GPIOC | RCC_AHBPeriph_ADC12);
+
+    // 2. ADC Clock Configuration
+    RCC->CFGR2 &= ~0x1F;
+    RCC->CFGR2 |= 0x10;
+    ADC1_2->CCR &= ~(0x3 << 16);
+    ADC1_2->CCR |= (0x1 << 16);
+
+    // 3. LED Configuration (Outputs)
+    GPIOA->MODER &= ~(0x3 << (9 * 2)); // Red PA9
+    GPIOA->MODER |=  (0x1 << (9 * 2));
+    GPIOC->MODER &= ~(0x3 << (7 * 2)); // Green PC7
+    GPIOC->MODER |=  (0x1 << (7 * 2));
+    GPIOB->MODER &= ~(0x3 << (4 * 2)); // Blue PB4
+    GPIOB->MODER |=  (0x1 << (4 * 2));
+
+    // 4. Joystick X/Y (Analog PA0, PA1)
+        GPIOA->MODER |= (0xF << (0 * 2));
+
+        // 5. BUTTONS CONFIGURATION
+        // Setup PC0 (Shoot)
+        GPIOC->MODER &= ~(0x3 << (0 * 2)); // Mode: Input
+        GPIOC->PUPDR &= ~(0x3 << (0 * 2)); // Clear
+        GPIOC->PUPDR |=  (0x1 << (0 * 2)); // Pull-up
+
+        // Setup PB10 (Down) - THIS WAS MISSING
+        GPIOC->MODER &= ~(0x3 << (1 * 2)); // Mode: Input
+        GPIOC->PUPDR &= ~(0x3 << (1 * 2)); // Clear
+        GPIOC->PUPDR |=  (0x1 << (1 * 2)); // Pull-up
+
+
+    // 6. ADC Startup
+    ADC1->CR &= ~(0x3 << 28);
+    ADC1->CR |= (0x1 << 28);
+    for(volatile int i = 0; i < 10000; i++);
+    ADC1->CR |= (1U << 31);
+    while(ADC1->CR & (1U << 31));
+    ADC1->CR |= (1 << 0);
+    while(!(ADC1->ISR & (1 << 0)));
+}
+
 uint8_t read_joystick(void)
 {
     if (GPIOA->IDR & (1 << 4)) return JOY_UP;
@@ -81,3 +139,23 @@ uint8_t read_joystick(void)
     if (GPIOB->IDR & (1 << 5)) return JOY_CENTER;
     return 0;
 }
+
+uint8_t read_30010_joystick(void) {
+    uint8_t res = 0;
+
+    // 1. Read ONLY the X-axis (PA0) for Left/Right
+    // (Kept exactly as is to avoid breaking your working X-axis)
+    uint16_t x_val = adc_read(1);
+    if (x_val < 2600) res |= JOY_LEFT;
+    if (x_val > 3300) res |= JOY_RIGHT;
+
+    // 2. SHOOT BUTTON (Connected to C0)
+    // We map C0 to JOY_CENTER
+    if (!(GPIOC->IDR & (1 << 0))) {
+        res |= JOY_CENTER;
+    }
+
+
+    return res;
+}
+
