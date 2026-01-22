@@ -16,6 +16,7 @@ typedef struct Bullet {
     int32_t x, y;
     int32_t vx, vy;
     bool active;
+    uint8_t frame;
 } Bullet;
 
 void bullets_init(Bullet bullets[], int count);
