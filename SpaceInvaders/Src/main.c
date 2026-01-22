@@ -41,7 +41,8 @@ int main(void)
     uart_init(115200);
     timer15_init();
     lcd_init();
-    GPIO_init();
+    //GPIO_init(); uncomment if on shiled joystick is to be used
+    GPIO_30010_init();
     printf("\x1B[?25h"); // go to (1,1) on putty
 
     /* ===== BUZZER INIT + BG MUSIC ===== */
@@ -99,7 +100,8 @@ int main(void)
            Jeres tick er 20 Hz => 50 ms pr tick */
         buzzer_update((uint16_t)TICK_MS);
 
-        uint8_t input = read_joystick();
+        //uint8_t input = read_joystick(); //uncomment if using shield joystick
+        uint8_t input = read_30010_joystick();
 
         /* Hvis state ændres: tegn ny skærm */
         if (state != prev_state) {

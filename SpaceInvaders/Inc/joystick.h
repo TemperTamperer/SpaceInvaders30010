@@ -12,8 +12,10 @@
 
 
 void GPIO_init(void);
+void GPIO_30010_init(void);
 uint8_t read_joystick(void);
 void set_led(uint8_t input);
+uint8_t read_30010_joystick(void);
 
 uint8_t joystick_just_pressed(uint8_t input, uint8_t mask, uint8_t *prev);
 uint8_t joystick_get_move(uint8_t raw);
