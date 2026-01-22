@@ -20,6 +20,15 @@
 	    {' ', ' ', '\'', '-', '-', '-', '\'', ' ', ' '}
 	};
 
+void asteroid_init(asteroid *ast){
+	ast->x = 2;
+	ast->y = 20;
+	ast->sx = 19;
+	ast->sy = 7;
+	ast->alive = 1;
+	ast->clean = 1;
+}
+
 void asteroid_push_buffer(uint8_t buffer[][SCREEN_COLS], asteroid ast){
 	if(ast.alive == 1){
 		for(int i = 0; i < 7; i++){

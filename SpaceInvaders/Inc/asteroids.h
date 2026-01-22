@@ -13,6 +13,7 @@ typedef struct{
 	uint8_t clean; //Is clean until enemy collision
 } asteroid;
 
+void asteroid_init(asteroid *ast);
 void asteroid_push_buffer(uint8_t buffer[][SCREEN_COLS], asteroid ast);
 void asteroid_update_pos(asteroid *ast);
 void asteroid_enemies_collision(asteroid *ast, enemy enemy_pool[MAX_ENEMIES]);

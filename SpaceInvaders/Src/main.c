@@ -55,12 +55,7 @@ void game_reset(
     *enemy_spawn_counter = 0;
     *enemy_move_counter  = 0;
 
-    ast->x = 2;
-    ast->y = 20;
-    ast->sx = 19;
-    ast->sy = 7;
-    ast->alive = 1;
-    ast->clean = 1;
+    asteroid_init(ast);
 }
 
 
@@ -101,7 +96,7 @@ int main(void)
     enemy enemy_pool[MAX_ENEMIES];
     enemies_init(enemy_pool);
 
-    asteroid ast = {.x = 2, .y = 20, .sx = 9, .sy = 7, .alive = 1, .clean = 1};
+    asteroid_init(ast);
 
     //Player and Enemy bullets setup
     Bullet playerBullets[BULLET_POOL_SIZE];
