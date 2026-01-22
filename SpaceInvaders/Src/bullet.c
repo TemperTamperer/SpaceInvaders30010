@@ -9,17 +9,6 @@ static Bullet* find_inactive(Bullet bullets[], int count)
     }
     return 0;
 }
-
-static const char bullet_anim[] = {
-    '|',
-    '\x18',  // ↑ (CP850)
-    '*',
-    '.'
-};
-
-#define BULLET_ANIM_FRAMES (sizeof(bullet_anim))
-
-
 void bullets_apply_kills_to_score(int kills, uint32_t *score, uint32_t *highscore)
 {
     if (kills <= 0) return;
@@ -40,21 +29,18 @@ void bullets_init(Bullet bullets[], int count)
     }
 }
 
-void bullets_shoot_single(Bullet bullets[], int x, int y, int count)
+void bullets_shoot_single(Bullet bullets[], int count, int x, int y)
 {
-	for (int i = 0; i < count; i++)
-	    {
-	        if (!bullets[i].active)
-	        {
-	            bullets[i].x = x;
-	            bullets[i].y = y;
-	            bullets[i].vx = 0;
-	            bullets[i].vy = -1;
-	            bullets[i].frame = 0;   // start animation
-	            bullets[i].active = true;
-	            break;
-	        }
-	    }
+    Bullet *b = find_inactive(bullets, count);
+    if (!b) return;
+
+    b->x = (int32_t)x * BULLET_FP;
+    b->y = (int32_t)y * BULLET_FP;
+    b->vx = 0;
+    b->vy = -1 * BULLET_FP;
+    b->active = true;
+    b->frame = 0;
+
 }
 
 void bullets_shoot_enemy(Bullet bullets[], int count, int x, int y)
@@ -101,21 +87,22 @@ void bullets_shoot_spread5(Bullet bullets[], int count, int x, int y)
 
 void bullets_update(Bullet bullets[], int count)
 {
-	 for (int i = 0; i < count; i++)
-	    {
-	        if (!bullets[i].active)
-	            continue;
+    for (int i = 0; i < count; i++)
+    {
+        Bullet *b = &bullets[i];
+        if (!b->active) continue;
 
-	        bullets[i].y += bullets[i].vy;
-	        bullets[i].x += bullets[i].vx;
+        b->x += b->vx;
+        b->y += b->vy;
+        b->frame = (b->frame + 1) & 3; // cycles 0–3
 
-	        bullets[i].frame++;
-	        if (bullets[i].frame >= BULLET_ANIM_FRAMES)
-	            bullets[i].frame = 0;
 
-	        if (bullets[i].y <= 0)
-	            bullets[i].active = true;
-	    }
+        int bx = (int)(b->x >> BULLET_FP_SHIFT);
+        int by = (int)(b->y >> BULLET_FP_SHIFT);
+
+        if (by < 0 || by >= SCREEN_ROWS || bx < 0 || bx >= SCREEN_COLS)
+            b->active = false;
+    }
 }
 
 int bullets_hit_enemies(Bullet bullets[], int count, enemy enemy_pool[])
@@ -156,20 +143,21 @@ int bullets_hit_enemies(Bullet bullets[], int count, enemy enemy_pool[])
     return kills;
 }
 
-
-
-void bullets_push_buffer(uint8_t buffer[SCREEN_ROWS][SCREEN_COLS], Bullet bullets[], int count)
+void bullets_push_buffer(uint8_t buf[SCREEN_ROWS][SCREEN_COLS], Bullet bullets[], int count)
 {
+	char bullet_chars[4] = { '|', 'o', '|', '0' };
     for (int i = 0; i < count; i++)
     {
         Bullet *b = &bullets[i];
         if (!b->active) continue;
 
-        if (bullets[i].y > 0 && bullets[i].y < SCREEN_ROWS &&
-                    bullets[i].x > 0 && bullets[i].x < SCREEN_COLS)
-                {
-                    buffer[bullets[i].y][bullets[i].x] =
-                        bullet_anim[bullets[i].frame];
+        int bx = (int)(b->x >> BULLET_FP_SHIFT);
+        int by = (int)(b->y >> BULLET_FP_SHIFT);
+
+        if (bx >= 0 && bx < SCREEN_COLS &&
+            by >= 0 && by < SCREEN_ROWS)
+        {
+        	buf[by][bx] = bullet_chars[b->frame];
         }
     }
 }
