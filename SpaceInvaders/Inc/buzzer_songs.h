@@ -3,7 +3,9 @@
 
 #include "buzzer.h"
 
-/* En loopbar baggrundssang */
-extern const buzzer_song_t BG_MAIN_THEME;
+// Background music for each level
+extern const buzzer_song_t BG_LEVEL_1;
+extern const buzzer_song_t BG_LEVEL_2;
+extern const buzzer_song_t BG_LEVEL_3;
 
 #endif
