@@ -1,6 +1,7 @@
 #define ESC 0x1B
 
 #include "ansi.h"
+#include "game_settings.h"
 
 
 void clrscr() {

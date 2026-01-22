@@ -12,58 +12,39 @@
 #define VL  "\xBA"   // ║"
 
 
-static void draw_hline(int x, int y, int len)
-{
-    gotoxy(x, y);
-    for (int i = 0; i < len; i++)
-        printf(HL);
-}
-
 void menu_draw(void)
 {
-    int x = 18;
-    int y = 5;
-    int w = 44;
-    int h = 28;
 
-    /* Frame */
-    gotoxy(x, y);         printf(TL);
-    draw_hline(x + 1, y, w - 2);
-    printf(TR);
 
-    for (int i = 1; i < h - 1; i++)
-    {
-        gotoxy(x, y + i);         printf(VL);
-        gotoxy(x + w - 1, y + i); printf(VL);
-    }
-
-    gotoxy(x, y + h - 1); printf(BL);
-    draw_hline(x + 1, y + h - 1, w - 2);
-    printf(BR);
+    draw_border();
 
     /* Title */
-    gotoxy(x + 12, y + 2);
+    gotoxy(20, 2);
     printf("SPACE  INVADERS");
 
     /* Rocket ship */
-    gotoxy(x + 21, y + 8);  printf("^");
-    gotoxy(x + 20, y + 9);  printf("/#\\");
-    gotoxy(x + 19, y + 10);  printf("|=#=|");
-    gotoxy(x + 20, y + 11);  printf("/ \\");
+    gotoxy(30, 15);  printf("^");
+    gotoxy(29, 16);  printf("/#\\");
+    gotoxy(28, 17);  printf("|=#=|");
+    gotoxy(29, 18);  printf("/ \\");
 
     /* Enemies */
-    gotoxy(x + 14,  y + 4);  printf("\xDB\xDB  \xDB\xDB  \xDB\xDB  \xDB\xDB");
-
+    gotoxy(24,  7);  printf("  \xDB\xDB     \xDB\xDB");
+    gotoxy(24,  8);  printf("   \xDB\xDB   \xDB\xDB ");
+    gotoxy(24,  9);  printf("  \xDB\xDB\xDB\xDB\xDB\xDB\xDB\xDB\xDB");
+    gotoxy(24,  10);  printf(" \xDB\xDB\xDB\xDB\xDB\xDB\xDB\xDB\xDB\xDB\xDB");
+    gotoxy(24,  11);  printf("\xDB\xDB         \xDB\xDB");
+    gotoxy(24,  12);  printf("\xDB\xDB         \xDB\xDB");
 
     /* Menu text */
-    gotoxy(x + 10, y + 16);
+    gotoxy(20, 22);
     printf("CENTER  -  START GAME");
 
-    gotoxy(x + 10, y + 18);
+    gotoxy(20, 24);
     printf("UP      -  HELP");
 
     /* Footer */
-    gotoxy(x + 6, y + h - 2);
+    gotoxy(16, 40);
     printf("DTU 30010  Programming Project");
 }
 
@@ -71,14 +52,37 @@ void help_draw(void)
 {
 	draw_border();
 
+
+	gotoxy(10, 6);
+	    printf("Welcome to Spaceinvaders 30010 edition");
+
     gotoxy(10, 10);
     printf("To move use the joystick left and right");
 
     gotoxy(10, 12);
     printf("To shot press the joystick center(press stick down)");
 
-    gotoxy(20, 20);
+    gotoxy(10, 14);
+        printf("Your goal is to kill as many enemy spaceships as ");
+        gotoxy(10, 15);
+            printf("possible without dying");
+
+    gotoxy(10, 16);
+         printf("However the enemy shots back so dont get hit!");
+
+    gotoxy(10, 18);
+          printf("Also be aware of the Astroids gravatiy");
+          gotoxy(10, 19);
+              printf("It can affect your bullets");
+
+    gotoxy(10, 22);
+          printf("To hide the game while playing press down");
+
+    gotoxy(20, 30);
     printf("Press Center to start game");
+
+    gotoxy(16, 40);
+        printf("DTU 30010  Programming Project");
 
 }
 void boss_draw(void)
@@ -86,9 +90,33 @@ void boss_draw(void)
 
 	draw_border();
 
-    gotoxy(40, 20);
-    printf("SIKE");
-    gotoxy(60, 20);
+	gotoxy(10, 6);
+		    printf("THIS IS A VERY IMPORTANT WORK DOCUMENT");
+
+	    gotoxy(10, 10);
+	    printf("Wake up to reality! Nothing ever goes as planned in");
+	    gotoxy(10, 11);
+	    printf("this accursed world. The longer you live, the more ");
+	    gotoxy(10, 12);
+	    printf("you realize that the only things that truly exist ");
+	    gotoxy(10, 13);
+	    printf("in this reality are merely pain. suffering and");
+	    gotoxy(10, 14);
+	    printf("futility. Listen, everywhere you look in this world,");
+	    gotoxy(10, 15);
+	    printf("wherever there is light, there will always be shadows");
+	    gotoxy(10, 16);
+	    printf("to be found as well. As long as there is a concept");
+	    gotoxy(10, 17);
+	    printf("of victors the vanquished will also exist. ");
+	    gotoxy(10, 18);
+        printf("The selfish intentto preserve peace, initiates war.");
+        gotoxy(10, 19);
+        printf("and hatred is born in order to protect love.");
+        gotoxy(10, 20);
+        printf("- Madara Uchiha ");
+
+        gotoxy(10,30);
         printf("To continue press Center");
 
 

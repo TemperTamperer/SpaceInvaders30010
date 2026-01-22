@@ -1,13 +1,13 @@
 #include "draw.h"
 #include "ansi.h"
-#include <stdio.h>
-#include <string.h>
 #include "game_settings.h"
 #include "player.h"
 #include "enemy.h"
 #include "bullet.h"
 #include "level.h"
 #include "asteroids.h"
+#include <stdio.h>
+#include <string.h>
 
 #define LEVEL_BOX_W 20
 #define LEVEL_BOX_H 3
@@ -28,13 +28,6 @@ void draw_check_game_over(uint8_t hp, uint32_t score, uint32_t highscore)
         while (1) { }
     }
 }
-#include "draw.h"
-#include "game_settings.h"
-#include "player.h"
-#include "enemy.h"
-#include "bullet.h"
-#include "level.h"
-#include "asteroids.h"
 
 void draw_frame(uint8_t current_buffer[SCREEN_ROWS][SCREEN_COLS],
                 uint8_t shadow_buffer[SCREEN_ROWS][SCREEN_COLS],
