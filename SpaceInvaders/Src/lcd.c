@@ -52,14 +52,14 @@ void lcd_draw_heart (uint8_t health, uint8_t buffer[]){
 
 void lcd_draw_score(int32_t score, uint8_t buffer[]) {
     char score_str[20];
-    // Format: Literal "Score: " followed by 8-digit padded integer
+    // Format: "Score: " followed by 8-digit padded integer
     sprintf(score_str, "Score: %08ld", score);
 
     int page3_offset = 256; // Page 2
     int x_start = 0;        //
 
     for (int i = 0; score_str[i] != '\0'; i++) {
-        // Map ASCII to your character_data table offset
+        // Map ASCII to character_data table offset
         uint8_t ascii_idx = (uint8_t)score_str[i] - 32;
 
         // Draw each column of the character
@@ -89,9 +89,7 @@ void set_led(uint8_t input){
 		GPIOB->ODR |= (0x00000001 << (4));
 	}
 
-    if (input == 0b00000001) GPIOA->ODR &= ~(0x00000001 << (9));; // Up joy = set PA9 (blue) = 0 ON
-    if (input == 0b00000010) GPIOC->ODR &= ~(0x00000001 << (7)); // Up joy = set PC7 (green) = 0 ON
-    if (input == 0b00000100) GPIOB->ODR &= ~(0x00000001 << (4)); // Up joy = set PB4 (red) = 0 ON
+    if (input == 0b00000100) GPIOB->ODR &= ~(0x00000001 << (4)); //set PB4 (red) = 0 (on)
 
 }
 

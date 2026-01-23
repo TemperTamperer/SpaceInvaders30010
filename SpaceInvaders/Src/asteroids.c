@@ -57,7 +57,7 @@ void asteroid_gravity(Bullet bullets[], asteroid ast) {
         Bullet *b = &bullets[i];
         if (!b->active) continue;
 
-        // 1. Get current bullet position
+        // Get current bullet position
         int16_t bx = b->x >> BULLET_FP_SHIFT;
         int16_t by = b->y >> BULLET_FP_SHIFT;
 
@@ -69,6 +69,7 @@ void asteroid_gravity(Bullet bullets[], asteroid ast) {
             int16_t dx = ast_center_x - bx;
             int16_t dy = ast_center_y - by;
 
+			//Magic numbers determine strength. Strength of y axis is large since ASCII chars are tall
             b->vx += (20 * dx) / dist;
             b->vy += (30 * dy) / dist;
         }
@@ -76,7 +77,8 @@ void asteroid_gravity(Bullet bullets[], asteroid ast) {
 }
 
 int32_t get_approx_dist(int32_t x1, int32_t y1, int32_t x2, int32_t y2){
-    int32_t dx = x1 - x2;
+    // Funciton uses Alpha Max plus Beta Min algorithm for dist approximation
+	int32_t dx = x1 - x2;
     int32_t dy = y1 - y2;
 
     // Absolute values
@@ -92,13 +94,14 @@ int32_t get_approx_dist(int32_t x1, int32_t y1, int32_t x2, int32_t y2){
         min_v = dx;
     }
 
-    // Makes use of Alpha Max plus Beta Min for dist approximation: Distance = 1.0 * max + 0.375 * min
+    //returns Distance = 1.0 * max + 0.375 * min (1.0 = alpha, 0.375 = Beta)
     return max_v + (min_v >> 2) + (min_v >> 3);
 }
 
 void asteroid_enemies_collision(asteroid *ast, enemy enemy_pool[MAX_ENEMIES]){
 	for(int e = 0; e < MAX_ENEMIES; e++){
 		if(enemy_pool[e].alive == 1){
+			//If stetements check if any part of the enemy is within the bounds of the asteroid
 			if((enemy_pool[e].x) > ast->x && (enemy_pool[e].x) < ast->x + ast->sx){
 				if((enemy_pool[e].y) < ast->y && (enemy_pool[e].y) > ast->y - ast->sy){
 					enemy_pool[e].alive =0;

@@ -106,18 +106,18 @@ void GPIO_30010_init(void) {
     GPIOB->MODER |=  (0x1 << (4 * 2));
 
     // 4. Joystick X/Y (Analog PA0, PA1)
-        GPIOA->MODER |= (0xF << (0 * 2));
+    GPIOA->MODER |= (0xF << (0 * 2));
 
-        // 5. BUTTONS CONFIGURATION
-        // Setup PC0 (Shoot)
-        GPIOC->MODER &= ~(0x3 << (0 * 2)); // Mode: Input
-        GPIOC->PUPDR &= ~(0x3 << (0 * 2)); // Clear
-        GPIOC->PUPDR |=  (0x1 << (0 * 2)); // Pull-up
+    // 5. BUTTONS CONFIGURATION
+    // Setup PC0 (Shoot)
+    GPIOC->MODER &= ~(0x3 << (0 * 2)); // Mode: Input
+    GPIOC->PUPDR &= ~(0x3 << (0 * 2)); // Clear
+    GPIOC->PUPDR |=  (0x1 << (0 * 2)); // Pull-up
 
-        // Setup PB10 (Down) - THIS WAS MISSING
-        GPIOC->MODER &= ~(0x3 << (1 * 2)); // Mode: Input
-        GPIOC->PUPDR &= ~(0x3 << (1 * 2)); // Clear
-        GPIOC->PUPDR |=  (0x1 << (1 * 2)); // Pull-up
+    // Setup PB10 (Down) NOT WORKING
+    GPIOC->MODER &= ~(0x3 << (1 * 2)); // Mode: Input
+    GPIOC->PUPDR &= ~(0x3 << (1 * 2)); // Clear
+    GPIOC->PUPDR |=  (0x1 << (1 * 2)); // Pull-up
 
 
     // 6. ADC Startup
