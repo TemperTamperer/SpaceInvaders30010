@@ -47,4 +47,15 @@ void TIM1_BRK_TIM15_IRQHandler(void)
 			system_time.minutes++;
 
 			if (system_time.minutes >= 60) {
-				system_time.minutes_
+				system_time.minutes = 0;
+				system_time.hours++;
+
+				if (system_time.hours >= 24) {
+					system_time.hours = 0;
+				}
+			}
+		}
+	}
+
+	TIM15->SR &= ~0x0001; // clear interrupt flag
+}
