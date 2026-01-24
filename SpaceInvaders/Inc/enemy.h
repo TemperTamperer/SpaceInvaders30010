@@ -42,4 +42,13 @@ void enemies_push_buffer(uint8_t buffer[SCREEN_ROWS][SCREEN_COLS], enemy enemy_p
 
 void enemies_spawn(enemy enemy_pool[MAX_ENEMIES]);
 void enemies_update_pos(enemy enemy_pool[MAX_ENEMIES], player *p);
-uint8_t enemies_player_c_
+uint8_t enemies_player_collision(enemy enemy_pool[MAX_ENEMIES], player *p);
+
+// enemy firing logic
+void enemies_shoot(enemy enemy_pool[],
+                   Bullet* enemyBullets,
+                   int enemyBullets_n,
+                   EnemyShootState* st,
+                   uint8_t level);
+
+#endif /* ENEMY_H_ */
