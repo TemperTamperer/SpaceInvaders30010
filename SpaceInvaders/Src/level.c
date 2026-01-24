@@ -62,4 +62,12 @@ void level_popup_tick(LevelState* s)
 }
 
 // one-shot pulse for clearing the popup box
-uint8_t level_popup_just_ended(LevelSta
+uint8_t level_popup_just_ended(LevelState* s)
+{
+    if (s->popup_ended_pulse)
+    {
+        s->popup_ended_pulse = 0;
+        return 1u;
+    }
+    return 0u;
+}
