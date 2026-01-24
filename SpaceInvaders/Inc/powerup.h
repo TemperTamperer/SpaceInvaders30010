@@ -28,4 +28,7 @@ void powerup_tick(PowerupState* s);
 void powerup_shoot(PowerupState* s,
                    Bullet bullets[], int count,
                    uint8_t shoot_just_pressed,
-				   player
+				   player p,
+				   uint8_t buffer[][SCREEN_COLS]);
+
+#endif
