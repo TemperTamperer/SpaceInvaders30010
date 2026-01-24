@@ -6,11 +6,12 @@
 #include "enemy.h"
 #include "bullet.h"
 
+// single asteroid
 typedef struct{
-	uint16_t x, y; //position
-	uint16_t sx, sy; //dimensions
-	uint8_t alive; //on screen
-	uint8_t clean; //Is clean until enemy collision
+	uint16_t x, y;    // position
+	uint16_t sx, sy;  // size
+	uint8_t alive;    // on screen
+	uint8_t clean;    // stays clean until enemy collision
 } asteroid;
 
 void asteroid_init(asteroid *ast);
@@ -20,6 +21,7 @@ void asteroid_enemies_collision(asteroid *ast, enemy enemy_pool[MAX_ENEMIES]);
 void asteroid_gravity(Bullet bullets[], asteroid ast);
 int32_t get_approx_dist(int32_t x1, int32_t y1, int32_t x2, int32_t y2);
 
+// asteroid spawner / manager
 typedef struct {
     asteroid ast;
     uint16_t move_counter;
