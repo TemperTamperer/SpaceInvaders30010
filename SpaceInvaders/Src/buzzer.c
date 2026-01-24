@@ -1,10 +1,8 @@
 #include "buzzer.h"
 #include "stm32f30x_conf.h"
 
-/* ============================================================
-   HARDWARE (fra NUCLEO-F302R8 user manual)
-   Arduino D6 -> PB10 -> TIM2_CH3
-   ============================================================ */
+/* Pins (NUCLEO-F302R8)
+   Arduino D6 -> PB10 -> TIM2_CH3 */
 #define SPK_GPIO        GPIOB
 #define SPK_PIN         GPIO_Pin_10
 #define SPK_PIN_SOURCE  GPIO_PinSource10
@@ -14,14 +12,12 @@
 #define SPK_TIM         TIM2
 #define SPK_TIM_CLK     RCC_APB1Periph_TIM2
 
-/* System clock antages 64 MHz */
+/* system clock: 64 MHz */
 #define SYSCLK_HZ       64000000u
 #define PRESCALER       (64 - 1)        // 64 MHz / 64 = 1 MHz
 #define TICK_HZ         (SYSCLK_HZ / 64)
 
-/* ============================================================
-   Internt state
-   ============================================================ */
+/* sequencer state */
 typedef struct {
     buzzer_song_t song;
     size_t idx;
@@ -37,9 +33,7 @@ static uint8_t bg_was_playing = 0;
 static size_t bg_saved_idx = 0;
 static uint16_t bg_saved_remaining = 0;
 
-/* ============================================================
-   Lydeffekter
-   ============================================================ */
+/* sound effects */
 static const buzzer_note_t SFX_SHOOT_NOTES[] = {
     {1200, 30}, {0, 10}
 };
@@ -66,13 +60,11 @@ static const buzzer_note_t SFX_GAMEOVER_NOTES[] = {
 
 #define SONG(arr) (buzzer_song_t){ arr, sizeof(arr)/sizeof(arr[0]) }
 
-/* ============================================================
-   HAL – PWM setup
-   ============================================================ */
+/* PWM helper */
 static void speaker_set_freq(uint16_t freq)
 {
     if (freq == 0) {
-        SPK_TIM->CCR3 = 0;   // duty = 0 -> stilhed
+        SPK_TIM->CCR3 = 0;   // mute
         return;
     }
 
@@ -86,7 +78,7 @@ static void speaker_set_freq(uint16_t freq)
 
 void buzzer_init(void)
 {
-    /* GPIO PB10 som AF */
+    // GPIO PB10 as alternate function
     RCC_AHBPeriphClockCmd(SPK_GPIO_CLK, ENABLE);
 
     GPIO_InitTypeDef g;
@@ -99,7 +91,7 @@ void buzzer_init(void)
 
     GPIO_PinAFConfig(SPK_GPIO, SPK_PIN_SOURCE, SPK_AF);
 
-    /* Timer 2 */
+    // TIM2 base
     RCC_APB1PeriphClockCmd(SPK_TIM_CLK, ENABLE);
 
     TIM_TimeBaseInitTypeDef t;
@@ -119,9 +111,7 @@ void buzzer_init(void)
     TIM_Cmd(SPK_TIM, ENABLE);
 }
 
-/* ============================================================
-   Sequencer
-   ============================================================ */
+/* sequencer */
 static void seq_start(seq_player_t *p)
 {
     p->playing = 1;
@@ -142,9 +132,7 @@ static void seq_next(seq_player_t *p)
     speaker_set_freq(p->song.notes[p->idx].freq_hz);
 }
 
-/* ============================================================
-   API
-   ============================================================ */
+/* public API */
 void buzzer_set_bg(buzzer_song_t song, uint8_t loop)
 {
     bg.song = song;
