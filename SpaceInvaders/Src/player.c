@@ -1,19 +1,19 @@
 #include "player.h"
-#include "powerup.h"   // Fixes PU_TRIPLE_POS error
-#include "bullet.h"    // Fixes unknown type name 'Bullet'
+#include "powerup.h"
+#include "bullet.h"
 
 /* Player sprite:
          ^
         / \
        /═█═\
-    */
+*/
+uint8_t player_sprite[3][5] = {
+    {' ', ' ', '^', ' ', ' '},
+    {' ', '/', ' ', '\\', ' '},
+    {'/', 205, 219, 205, '\\'}
+};
 
-    uint8_t player_sprite[3][5] = {
-        {' ', ' ', '^', ' ', ' '},
-        {' ', '/', ' ', '\\', ' '},
-        {'/', 205, 219, 205, '\\'}
-    };
-
+// init player stats + position
 void player_init(player *p)
 {
     p->x = 50;
@@ -23,6 +23,8 @@ void player_init(player *p)
     p->hp = 3;
     p->hit_count = 0;
 }
+
+// horizontal movement
 void player_update_pos(uint8_t input, player *p1)
 {
     if (input & JOY_LEFT)
@@ -38,8 +40,9 @@ void player_update_pos(uint8_t input, player *p1)
     }
 }
 
-void player_push_buffer(uint8_t buffer[][SCREEN_COLS], player p, PowerupState *s){
-
+// draw player (and triple if active)
+void player_push_buffer(uint8_t buffer[][SCREEN_COLS], player p, PowerupState *s)
+{
     for (int i = 0; i < 3; i++)
     {
         for (int j = 0; j < 5; j++)
@@ -48,29 +51,32 @@ void player_push_buffer(uint8_t buffer[][SCREEN_COLS], player p, PowerupState *s
         }
     }
 
-    if(s->active == PU_TRIPLE_POS){
-    	triple_player_push_buffer(buffer, p);
+    if (s->active == PU_TRIPLE_POS) {
+        triple_player_push_buffer(buffer, p);
     }
 }
 
-void triple_player_push_buffer(uint8_t buffer[][SCREEN_COLS], player p){
-	for (int i = 0; i < 3; i++)
-	    {
-	        for (int j = 0; j < 5; j++)
-	        {
-	            buffer[p.y - i][p.x - 5 + j] = player_sprite[p.sy - i - 1][j];
-	        }
-	    }
+// extra sprites for triple mode
+void triple_player_push_buffer(uint8_t buffer[][SCREEN_COLS], player p)
+{
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            buffer[p.y - i][p.x - 5 + j] = player_sprite[p.sy - i - 1][j];
+        }
+    }
 
-	for (int i = 0; i < 3; i++)
-	    {
-	        for (int j = 0; j < 5; j++)
-	        {
-	            buffer[p.y - i][p.x+ 5 + j] = player_sprite[p.sy - i - 1][j];
-	        }
-	    }
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            buffer[p.y - i][p.x + 5 + j] = player_sprite[p.sy - i - 1][j];
+        }
+    }
 }
 
+// bullet hitbox vs player
 uint8_t player_hit_by_enemy_bullets(Bullet *enemyBullets,
                                  int count,
                                  player *p)
@@ -109,6 +115,6 @@ uint8_t player_hit_by_enemy_bullets(Bullet *enemyBullets,
 }
 
 void player_enemy_collision(Bullet *enemyBullets,
-                                 player *p){
-
+                                 player *p)
+{
 }
