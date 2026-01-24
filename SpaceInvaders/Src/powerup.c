@@ -33,4 +33,57 @@ void powerup_update_from_score(PowerupState* s, uint32_t score)
         activate(s, PU_TRIPLE_POS);
     }
 
-    if (!s->
+    if (!s->trig_750 && score >= SCORE_SPREAD_5)
+    {
+        s->trig_750 = 1;
+        activate(s, PU_SPREAD_5);
+    }
+}
+
+// tick down active powerup
+void powerup_tick(PowerupState* s)
+{
+    if (s->ticks_left > 0)
+    {
+        s->ticks_left--;
+        if (s->ticks_left == 0)
+            s->active = PU_NONE;
+    }
+}
+
+// handle shooting based on active powerup
+void powerup_shoot(PowerupState* s,
+                   Bullet bullets[], int count,
+                   uint8_t shoot_just_pressed,
+				   player p,
+				   uint8_t buffer[][SCREEN_COLS])
+{
+    if (!shoot_just_pressed) return;
+
+    int8_t x = p.x + (p.sx >> 1);
+    int8_t y = p.y - 1;
+
+    if (s->active == PU_TRIPLE_POS)
+    {
+        bullets_shoot_single(bullets, count, x, y);
+
+        p.x = p.x - 5;
+        x = p.x + (p.sx >> 1);
+        y = p.y - 1;
+        bullets_shoot_single(bullets, count, x, y);
+
+        p.x = p.x + 10;
+        x = p.x + (p.sx >> 1);
+        y = p.y - 1;
+        bullets_shoot_single(bullets, count, x, y);
+        return;
+    }
+
+    if (s->active == PU_SPREAD_5)
+    {
+        bullets_shoot_spread5(bullets, count, x, y);
+        return;
+    }
+
+    bullets_shoot_single(bullets, count, x, y);
+}
