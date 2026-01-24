@@ -12,6 +12,7 @@
 #define BULLET_FP_SHIFT 8
 #define BULLET_FP (1 << BULLET_FP_SHIFT)
 
+// bullet with fixed-point position
 typedef struct Bullet {
     int32_t x, y;
     int32_t vx, vy;

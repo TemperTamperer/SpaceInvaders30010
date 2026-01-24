@@ -1,9 +1,6 @@
 #include "buzzer_songs.h"
 
-/*
-  Bare data -> tæller som "read music file" i embedded-stil.
-  (Vi har bare embedded notes i en array)
-*/
+/* background theme notes */
 static const buzzer_note_t BG_THEME_NOTES[] = {
     { 523, 150 }, { 0, 50 },
     { 659, 150 }, { 0, 50 },

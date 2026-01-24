@@ -8,12 +8,14 @@
 #define SCORE_TRIPLE_POS 250u
 #define SCORE_SPREAD_5   750u
 
+// activate powerup and reset timer
 static void activate(PowerupState* s, PowerupType t)
 {
     s->active = t;
     s->ticks_left = PU_TICKS;
 }
 
+// init powerup state
 void powerup_init(PowerupState* s)
 {
     s->active = PU_NONE;
@@ -22,6 +24,7 @@ void powerup_init(PowerupState* s)
     s->trig_750 = 0;
 }
 
+// unlock powerups based on score
 void powerup_update_from_score(PowerupState* s, uint32_t score)
 {
     if (!s->trig_250 && score >= SCORE_TRIPLE_POS)
@@ -37,6 +40,7 @@ void powerup_update_from_score(PowerupState* s, uint32_t score)
     }
 }
 
+// tick down active powerup
 void powerup_tick(PowerupState* s)
 {
     if (s->ticks_left > 0)
@@ -47,6 +51,7 @@ void powerup_tick(PowerupState* s)
     }
 }
 
+// handle shooting based on active powerup
 void powerup_shoot(PowerupState* s,
                    Bullet bullets[], int count,
                    uint8_t shoot_just_pressed,
@@ -55,8 +60,8 @@ void powerup_shoot(PowerupState* s,
 {
     if (!shoot_just_pressed) return;
 
-     int8_t x = p.x + (p.sx >> 1);
-     int8_t y = p.y - 1;
+    int8_t x = p.x + (p.sx >> 1);
+    int8_t y = p.y - 1;
 
     if (s->active == PU_TRIPLE_POS)
     {
@@ -66,13 +71,11 @@ void powerup_shoot(PowerupState* s,
         x = p.x + (p.sx >> 1);
         y = p.y - 1;
         bullets_shoot_single(bullets, count, x, y);
-        //player_push_buffer(buffer, p);
 
         p.x = p.x + 10;
         x = p.x + (p.sx >> 1);
         y = p.y - 1;
         bullets_shoot_single(bullets, count, x, y);
-        //player_push_buffer(buffer, p);
         return;
     }
 

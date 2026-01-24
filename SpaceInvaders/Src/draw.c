@@ -15,12 +15,15 @@
 #define LEVEL_BOX_ROW (2 + (SCREEN_ROWS / 2))
 #define LEVEL_BOX_COL (2 + ((SCREEN_COLS - LEVEL_BOX_W) / 2))
 
+// init screen + hide cursor
 void draw_game_init_screen(void)
 {
     clrscr();
     draw_border();
     printf("\x1B[?25l");
 }
+
+// freeze game if hp hits zero
 void draw_check_game_over(uint8_t hp, uint32_t score, uint32_t highscore)
 {
     if (hp == 0)
@@ -30,6 +33,7 @@ void draw_check_game_over(uint8_t hp, uint32_t score, uint32_t highscore)
     }
 }
 
+// main render pass
 void draw_frame(uint8_t current_buffer[SCREEN_ROWS][SCREEN_COLS],
                 uint8_t shadow_buffer[SCREEN_ROWS][SCREEN_COLS],
                 const player *p,
@@ -58,6 +62,7 @@ void draw_frame(uint8_t current_buffer[SCREEN_ROWS][SCREEN_COLS],
     ui_draw_status(p->hp, p->hit_count, score, highscore);
 }
 
+// level popup box
 void draw_level_box(uint8_t level)
 {
     char text[16];
@@ -86,6 +91,7 @@ void draw_level_box_clear(void)
     }
 }
 
+// top status line
 void ui_draw_status(uint8_t hp, uint8_t hits, uint32_t score, uint32_t highscore)
 {
     const int row = 2;
@@ -103,9 +109,9 @@ void ui_draw_status(uint8_t hp, uint8_t hits, uint32_t score, uint32_t highscore
            (unsigned long)highscore);
 
     printf("                ");
-
 }
 
+// game over screen + show cursor
 void draw_game_over(uint32_t score, uint32_t highscore)
 {
     clrscr();
@@ -165,6 +171,7 @@ void draw_game_over(uint32_t score, uint32_t highscore)
     printf("\x1B[?25h");
 }
 
+// diff-based buffer draw
 void draw_buffer(uint8_t current[][SCREEN_COLS], uint8_t shadow_buffer[][SCREEN_COLS])
 {
     for (int r = 0; r < SCREEN_ROWS; r++)
@@ -186,6 +193,7 @@ void clear_buffer(uint8_t current_buffer[][SCREEN_COLS])
     memset(current_buffer, ' ', SCREEN_ROWS * SCREEN_COLS);
 }
 
+// draw outer border
 void draw_border(void)
 {
     gotoxy(1, 1);

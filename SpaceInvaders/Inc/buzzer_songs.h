@@ -3,7 +3,7 @@
 
 #include "buzzer.h"
 
-/* En loopbar baggrundssang */
+// loopable background theme
 extern const buzzer_song_t BG_MAIN_THEME;
 
 #endif

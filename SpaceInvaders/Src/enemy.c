@@ -3,11 +3,13 @@
 #include <string.h>
 #include "player.h"
 
+// clear enemy pool
 void enemies_init(enemy enemy_pool[])
 {
     memset(enemy_pool, 0, sizeof(enemy) * MAX_ENEMIES);
 }
 
+// kill all enemies + reset shooting state
 void enemies_reset(enemy enemy_pool[], EnemyShootState* st)
 {
     for (int i = 0; i < MAX_ENEMIES; i++)
@@ -16,6 +18,8 @@ void enemies_reset(enemy enemy_pool[], EnemyShootState* st)
     st->shoot_counter = 0;
     st->next_enemy = 0;
 }
+
+// tick movement + spawning
 void enemies_tick(enemy pool[],
                   uint16_t *move_counter,
                   uint16_t *spawn_counter,
@@ -38,6 +42,7 @@ void enemies_tick(enemy pool[],
     }
 }
 
+// spawn a row of enemies near the top
 void enemies_spawn(enemy enemy_pool[])
 {
     const int SPAWN_AMOUNT = 6;
@@ -71,6 +76,7 @@ void enemies_spawn(enemy enemy_pool[])
     }
 }
 
+// move enemies down and handle bottom collision
 void enemies_update_pos(enemy enemy_pool[], player *p)
 {
     for (int e = 0; e < MAX_ENEMIES; e++)
@@ -92,6 +98,7 @@ void enemies_update_pos(enemy enemy_pool[], player *p)
     }
 }
 
+// draw enemies into buffer
 void enemies_push_buffer(uint8_t buffer[SCREEN_ROWS][SCREEN_COLS], enemy enemy_pool[])
 {
     uint8_t alien_lasher[3][5] = {
@@ -125,6 +132,7 @@ void enemies_push_buffer(uint8_t buffer[SCREEN_ROWS][SCREEN_COLS], enemy enemy_p
     }
 }
 
+// enemy shooting pattern (scales with level)
 void enemies_shoot(enemy enemy_pool[],
                    Bullet* enemyBullets,
                    int enemyBullets_n,

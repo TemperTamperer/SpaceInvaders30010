@@ -3,15 +3,17 @@
 
 #include <stdint.h>
 #include "game_settings.h"
-#include "bullet.h" // Add this to define what 'Bullet' is
-#include "player.h" // Add this to define what 'player' is
+#include "bullet.h"
+#include "player.h"
 
+// powerup types
 typedef enum PowerupType{
     PU_NONE = 0,
     PU_TRIPLE_POS = 1,
     PU_SPREAD_5 = 2
 } PowerupType;
 
+// powerup state
 typedef struct PowerupState{
     PowerupType active;
     uint16_t ticks_left;

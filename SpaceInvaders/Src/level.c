@@ -4,6 +4,7 @@
 #define LEVEL3_SCORE 2000u
 #define LEVEL_POPUP_TICKS 40u
 
+// default level state
 void level_init(LevelState* s)
 {
     s->level = 1;
@@ -12,6 +13,7 @@ void level_init(LevelState* s)
     s->popup_ended_pulse = 0;
 }
 
+// update level thresholds based on score
 void level_update_from_score(LevelState* s, uint32_t score)
 {
     uint8_t new_level;
@@ -34,6 +36,7 @@ uint8_t level_get(const LevelState* s)
     return s->level;
 }
 
+// enemy spawn pacing per level
 uint16_t level_spawn_limit(const LevelState* s)
 {
     if (s->level == 3) return 45;
@@ -41,11 +44,13 @@ uint16_t level_spawn_limit(const LevelState* s)
     return 80;
 }
 
+// popup visible while ticks > 0
 uint8_t level_popup_active(const LevelState* s)
 {
     return (s->popup_ticks > 0) ? 1u : 0u;
 }
 
+// count down popup timer
 void level_popup_tick(LevelState* s)
 {
     if (s->popup_ticks > 0)
@@ -56,6 +61,7 @@ void level_popup_tick(LevelState* s)
     }
 }
 
+// one-shot pulse for clearing the popup box
 uint8_t level_popup_just_ended(LevelState* s)
 {
     if (s->popup_ended_pulse)
