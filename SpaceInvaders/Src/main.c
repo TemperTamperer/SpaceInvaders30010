@@ -28,7 +28,7 @@
 
 game_state state = STATE_MENU;
 
-
+// reset all game state
 void game_reset(
     player *p1,
     enemy enemy_pool[],
@@ -58,7 +58,6 @@ void game_reset(
     asteroid_init(ast);
 }
 
-
 int main(void)
 {
     uart_init(115200);
@@ -69,20 +68,20 @@ int main(void)
     printf("\x1B[?h"); // go to (1,1) on putty
     printf("\x1B[?25h"); // remove cursor
 
-    /* ===== BUZZER INIT + BG MUSIC ===== */
+    // buzzer + background theme
     buzzer_init();
-    buzzer_set_bg(BG_MAIN_THEME, 1);   // loop baggrundsmusik
+    buzzer_set_bg(BG_MAIN_THEME, 1);
     buzzer_bg_start();
 
-    //Buffer and shadow mask setup
+    // buffers
     uint8_t current_buffer[SCREEN_ROWS][SCREEN_COLS];
     uint8_t shadow_buffer[SCREEN_ROWS][SCREEN_COLS];
     memset(current_buffer, ' ', SCREEN_ROWS * SCREEN_COLS);
     memset(shadow_buffer,  ' ', SCREEN_ROWS * SCREEN_COLS);
 
-    //LCD buffer setup
+    // lcd buffer
     uint8_t lcd_buffer[512];
-    memset(lcd_buffer,0x00,512);
+    memset(lcd_buffer, 0x00, 512);
 
     uint32_t score = 0;
     uint32_t highscore = 0;
@@ -99,7 +98,7 @@ int main(void)
     asteroid ast;
     asteroid_init(&ast);
 
-    //Player and Enemy bullets setup
+    // bullet pools
     Bullet playerBullets[BULLET_POOL_SIZE];
     Bullet enemyBullets[ENEMY_BULLET_POOL_SIZE];
     bullets_init(playerBullets, BULLET_POOL_SIZE);
@@ -120,15 +119,13 @@ int main(void)
 
     while (1)
     {
-
-        /* ===== BUZZER TIMING =====
-           Jeres tick er 20 Hz => 50 ms pr tick */
+        // buzzer timing (20 Hz tick)
         buzzer_update((uint16_t)TICK_MS);
 
         uint8_t input = read_joystick(); //uncomment if using shield joystick
         //uint8_t input = read_30010_joystick();
 
-        /* Hvis state ændres: tegn ny skærm */
+        // redraw on state change
         if (state != prev_state) {
             clrscr();
 
@@ -150,7 +147,6 @@ int main(void)
                 	printf("\x1B[?h");
                     break;
                 default:
-                    // Optional: handle unexpected states
                     break;
             }
             prev_state = state;
@@ -183,6 +179,7 @@ int main(void)
                 state = STATE_PLAYING;
             }
             break;
+
         case STATE_GAME_OVER:
             if (menu_action == 1) {
                 game_reset(&p1, enemy_pool,
@@ -192,7 +189,7 @@ int main(void)
                            &enemy_spawn_counter,
                            &enemy_move_counter);
 
-                prev_state = -1;   // force redraw
+                prev_state = -1;
                 state = STATE_PLAYING;
             }
             break;
@@ -204,26 +201,23 @@ int main(void)
                 break;
             }
 
-
-
-            //MAIN GAME LOOP:
             timer_wait_for_tick();
-
             clear_buffer(current_buffer);
 
-            //enemy counters
+            // tick counters
             enemy_spawn_counter++;
             enemy_move_counter++;
 
-            // Enemy/asteroid move and spawn
+            // enemy movement + asteroid collision
             if (enemy_move_counter > 15) {
             	enemy_move_counter = 0;
             	enemies_update_pos(enemy_pool, &p1);
 
                 asteroid_enemies_collision(&ast, enemy_pool);
-                set_led(0); //Turns LED off
+                set_led(0);
             }
 
+            // enemy spawn + asteroid movement
             if (enemy_spawn_counter > 80) {
             	enemy_spawn_counter = 0;
             	enemies_spawn(enemy_pool);
@@ -231,14 +225,13 @@ int main(void)
             	asteroid_update_pos(&ast);
             }
 
-            // Movement
+            // player movement
             uint8_t move_input = input & (JOY_UP | JOY_DOWN | JOY_LEFT | JOY_RIGHT);
             player_update_pos(move_input, &p1);
 
-            // Player bullet handling
+            // shooting input
             uint8_t center_just_pressed =
                 joystick_just_pressed(input, JOY_CENTER, &prev_center_pressed);
-
 
             powerup_shoot(&powerup,
                       playerBullets,
@@ -247,13 +240,14 @@ int main(void)
                       p1,
 					  current_buffer);
 
+            // player bullets
             asteroid_gravity(playerBullets, ast);
             bullets_update(playerBullets, BULLET_POOL_SIZE);
             int bonus_collected = 0;
             int kills = bullets_hit_enemies(playerBullets, BULLET_POOL_SIZE,
                                            enemy_pool);
 
-            //Enemy bullet handling
+            // enemy bullets
             enemies_shoot(enemy_pool,
                       enemyBullets,
                       ENEMY_BULLET_POOL_SIZE,
@@ -261,17 +255,17 @@ int main(void)
                       level_get(&level));
             bullets_update(enemyBullets, ENEMY_BULLET_POOL_SIZE);
 
-
+            // player hit
             if(player_hit_by_enemy_bullets(enemyBullets, ENEMY_BULLET_POOL_SIZE, &p1)){
-            	set_led(0b00000100); //Sets LED to red color
-            	buzzer_play_sfx(SFX_PLAYER_HIT);;
+            	set_led(0b00000100);
+            	buzzer_play_sfx(SFX_PLAYER_HIT);
             }
 
-
             if (center_just_pressed) {
-                            buzzer_play_sfx(SFX_SHOOT);
-                        }
-            //hit scan
+                buzzer_play_sfx(SFX_SHOOT);
+            }
+
+            // kill scoring
             if (kills > 0) {
                 buzzer_play_sfx(SFX_ENEMY_DEATH);
 
@@ -280,23 +274,22 @@ int main(void)
                     highscore = score;
             }
 
-
             if (p1.hp == 0) {
             	buzzer_play_sfx(SFX_GAMEOVER);
             	state = STATE_GAME_OVER;
             }
 
-            //Power up handling
+            // powerup timing
             powerup_update_from_score(&powerup, score);
             powerup_tick(&powerup);
 
-            //Level handling
+            // level changes
             level_update_from_score(&level, score);
 
             uint8_t now_level = level_get(&level);
             if (now_level != last_level)
             {
-               last_level = now_level;
+                last_level = now_level;
 
                 enemies_reset(enemy_pool, &shootState);
                 bullets_init(enemyBullets, ENEMY_BULLET_POOL_SIZE);
@@ -306,15 +299,14 @@ int main(void)
             }
 
             if (level_popup_active(&level))
-            level_popup_tick(&level);
+                level_popup_tick(&level);
 
             if (level_popup_active((LevelState *)&level))
                 draw_level_box(level_get((LevelState *)&level));
             else if (level_popup_just_ended((LevelState *)&level))
                 draw_level_box_clear();
 
-
-            //draw and buffer functions
+            // draw objects
             player_push_buffer(current_buffer, p1, &powerup);
             enemies_push_buffer(current_buffer, enemy_pool);
 
@@ -330,6 +322,5 @@ int main(void)
             ui_draw_status(p1.hp, p1.hit_count, score, highscore);
             break;
         }
-
     }
 }
