@@ -136,7 +136,7 @@ uint8_t read_joystick(void)
 uint8_t read_30010_joystick(void) {
     uint8_t res = 0;
 
-    // Read ONLY the X-axis (PA0) for Left/Right
+    // Read the X-axis (PA0) for Left/Right
     uint16_t x_val = adc_read(1);
     if (x_val < 2600) res |= JOY_LEFT;
     if (x_val > 3300) res |= JOY_RIGHT;
